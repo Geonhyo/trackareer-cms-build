@@ -3,6 +3,8 @@ import { Card, Stack, Stat } from '@/components/ui';
 import { adminApi } from '@/shared/api/admin-api';
 import type { Schemas } from '@/shared/api/types';
 import { formatNumber, formatPercent } from '@/shared/lib/format';
+import { AlertList } from '@/features/status/AlertList';
+import { loadAlerts } from '@/features/status/load-alerts';
 import { DauChart } from './DauChart';
 import styles from './dashboard.module.css';
 
@@ -29,13 +31,24 @@ function Delta({
 }
 
 export async function OverviewSection() {
-  const { item } = await adminApi<Schemas['AdminOverviewResponseDto']>('/admin/stats/overview');
+  const [{ item }, alerts] = await Promise.all([
+    adminApi<Schemas['AdminOverviewResponseDto']>('/admin/stats/overview'),
+    loadAlerts(),
+  ]);
   const avgDau =
     item.dauSeries.reduce((sum, point) => sum + point.count, 0) /
     Math.max(1, item.dauSeries.length);
 
   return (
     <Stack>
+      {alerts && alerts.length > 0 && (
+        <Card
+          title={`이상 징후 ${alerts.length}건`}
+          description="지금 상태로 계산했어요. 고치면 사라져요."
+        >
+          <AlertList alerts={alerts} withLinks />
+        </Card>
+      )}
       <div className={styles.tiles}>
         <Card className={styles.hero}>
           <span style={{ fontSize: 13, fontWeight: 500, opacity: 0.85 }}>

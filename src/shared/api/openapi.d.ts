@@ -1238,6 +1238,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/admin/batch-runs/summary': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 잡별 요약 — 마지막 실행 · 마지막 성공 · 최근 7일 실패 · 상태 */
+    get: operations['AdminBatchRunsController_summary'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/admin/batch-runs': {
     parameters: {
       query?: never;
@@ -1479,6 +1496,160 @@ export interface paths {
      * @description 그 계정의 공고 · 전형을 지우고 상태별 목업으로 다시 채운다.
      */
     post: operations['AdminTestAccountsController_reseedPostings'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/system-status': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 서버 상태 — 인스턴스 · DB(SELECT 1) · UptimeRobot 가동 기록 */
+    get: operations['AdminSystemStatusController_systemStatus'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/alerts': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 이상 징후 (서버 · 배치 · 공고 추출) — 지금 상태로 계산, 심각한 것 먼저 */
+    get: operations['AdminSystemStatusController_alerts'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/extraction/overview': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 공고 추출 지표 — 요청 · 캐시 · 성공률 · 장애 · 응답 시간 · 비용, 일별 */
+    get: operations['AdminExtractionController_overview'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/extraction/sites': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 화이트리스트 사이트별 — 이용량 · 성공률 · 키 규칙 실패 · LLM 비율 */
+    get: operations['AdminExtractionController_sites'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/extraction/domains': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 화이트리스트 밖 도메인 순위 (상위 50) — 새 채용 플랫폼 찾기 */
+    get: operations['AdminExtractionController_domains'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/extraction/blocked-domains': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 차단 도메인 목록 (스크래퍼를 부르지 않는다) */
+    get: operations['AdminExtractionController_blockedDomains'];
+    put?: never;
+    /** 도메인 차단 (그 하위 도메인 포함, 다음 요청부터, SUPER 전용) */
+    post: operations['AdminExtractionController_blockDomain'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/extraction/blocked-domains/{domain}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** 도메인 차단 풀기 (SUPER 전용) */
+    delete: operations['AdminExtractionController_unblockDomain'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/extraction/results': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 저장된 추출 결과 찾기 (링크 · 공고 키 · 기업명, 최근 20개) */
+    get: operations['AdminExtractionController_searchResults'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/extraction/results/{id}/refresh': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** 다시 받기 — 다음 요청에서 캐시 대신 다시 추출해 같은 결과를 덮는다 (SUPER 전용) */
+    post: operations['AdminExtractionController_refresh'];
     delete?: never;
     options?: never;
     head?: never;
@@ -2632,7 +2803,7 @@ export interface components {
       /** @description 가입 주 (월요일) */
       weekStart: string;
       size: number;
-      /** @description 가입 다음 1~7주차에 접속한 비율 0~1. 아직 오지 않은 주는 null */
+      /** @description 가입 다음 1~7주차에 접속한 비율 0~1. 아직 다 지나지 않은 주는 null */
       retention: number[] | null;
     };
     AdminReasonCountDto: {
@@ -2968,7 +3139,10 @@ export interface components {
         | 'UPDATE_APP_SETTING'
         | 'CREATE_TEST_ACCOUNT'
         | 'UPDATE_TEST_ACCOUNT'
-        | 'RESEED_DEMO_POSTINGS';
+        | 'RESEED_DEMO_POSTINGS'
+        | 'BLOCK_EXTRACTION_DOMAIN'
+        | 'UNBLOCK_EXTRACTION_DOMAIN'
+        | 'REFRESH_EXTRACTION';
       /** @enum {string} */
       targetType:
         | 'USER'
@@ -2979,7 +3153,8 @@ export interface components {
         | 'PUSH'
         | 'AUTH'
         | 'NOTICE'
-        | 'APP_SETTING';
+        | 'APP_SETTING'
+        | 'EXTRACTION';
       /** @description 대상 식별자 raw (이름 해석 안 함) */
       targetId: string | null;
       /** @description 비고 (role 변경·email 등; 시크릿 미포함) */
@@ -3023,6 +3198,26 @@ export interface components {
       createdAt: string;
       /** @description 실행 소요(ms) = finishedAt-startedAt. 미완료(RUNNING)면 null */
       durationMs: number | null;
+    };
+    AdminBatchJobSummaryDto: {
+      jobName: string;
+      /** @description 잡 이름 (한국어) */
+      label: string;
+      /** @description 일정 (예: 매일 08:00) */
+      schedule: string;
+      /**
+       * @description OK · FAILED(마지막 실행 실패) · STUCK(30분 넘게 실행 중) · LATE(26시간 안에 성공 없음) · NEVER(기록 없음)
+       * @enum {string}
+       */
+      state: 'OK' | 'FAILED' | 'STUCK' | 'LATE' | 'NEVER';
+      lastRun: components['schemas']['AdminBatchRunItemDto'] | null;
+      /** Format: date-time */
+      lastSuccessAt: string | null;
+      /** @description 최근 7일 실패 수 */
+      failures7d: number;
+    };
+    AdminBatchJobSummaryResponseDto: {
+      items: components['schemas']['AdminBatchJobSummaryDto'][];
     };
     AdminBatchRunsListResponseDto: {
       items: components['schemas']['AdminBatchRunItemDto'][];
@@ -3315,6 +3510,224 @@ export interface components {
     AdminReseedPostingsResponseDto: {
       /** @description 새로 넣은 목업 공고 수 */
       postingCount: number;
+    };
+    ServerInfoDto: {
+      /**
+       * Format: date-time
+       * @description 현재 인스턴스가 켜진 시각
+       */
+      startedAt: string;
+      /** @description 현재 인스턴스 가동 시간(초) */
+      uptimeSeconds: number;
+      /** @description Cloud Run 리비전 이름(K_REVISION). 로컬은 null */
+      revision: string | null;
+      /** @description SENTRY_RELEASE */
+      release: string | null;
+      /** @description NODE_ENV */
+      environment: string;
+    };
+    DatabaseInfoDto: {
+      /** @enum {string} */
+      status: 'ok' | 'error';
+      /** @description `SELECT 1` 응답 시간(ms). 실패면 null */
+      latencyMs: number | null;
+    };
+    UptimeRatioDto: {
+      /** @description 최근 24시간 가동률(%) */
+      last1d: number;
+      /** @description 최근 7일 가동률(%) */
+      last7d: number;
+      /** @description 최근 30일 가동률(%) */
+      last30d: number;
+    };
+    ResponseTimePointDto: {
+      /** Format: date-time */
+      at: string;
+      /** @description 30분 평균 응답 시간(ms) */
+      ms: number;
+    };
+    MonitorIncidentDto: {
+      /**
+       * Format: date-time
+       * @description 장애 시작 시각
+       */
+      at: string;
+      /** @description 장애 지속 시간(초). 진행 중이면 지금까지의 시간 */
+      durationSeconds: number;
+      /** @description UptimeRobot이 남긴 원인 (예: "503 Service Unavailable") */
+      reason: string | null;
+      /** @description 아직 복구되지 않은 장애인지 */
+      ongoing: boolean;
+    };
+    MonitorInfoDto: {
+      /**
+       * @description UptimeRobot 연동 상태. NOT_CONFIGURED = UPTIMEROBOT_API_KEY 없음, ERROR = API 호출 실패
+       * @enum {string}
+       */
+      state: 'OK' | 'NOT_CONFIGURED' | 'ERROR';
+      /**
+       * @description 외부에서 본 현재 상태. state가 OK가 아니면 null
+       * @enum {string|null}
+       */
+      status: 'UP' | 'DOWN' | 'PAUSED' | 'PENDING' | null;
+      /** @description 체크 주기(초) */
+      intervalSeconds: number | null;
+      uptimeRatio: components['schemas']['UptimeRatioDto'] | null;
+      /** @description 최근 24시간 평균 응답 시간(ms) */
+      averageResponseMs: number | null;
+      /** @description 최근 24시간, 오래된 순 */
+      responseTimes: components['schemas']['ResponseTimePointDto'][];
+      /** @description 최근 장애, 최신순 */
+      incidents: components['schemas']['MonitorIncidentDto'][];
+      /**
+       * Format: date-time
+       * @description UptimeRobot에서 받아온 시각(1분 캐시)
+       */
+      fetchedAt: string | null;
+    };
+    SystemStatusDto: {
+      /** Format: date-time */
+      checkedAt: string;
+      server: components['schemas']['ServerInfoDto'];
+      database: components['schemas']['DatabaseInfoDto'];
+      monitor: components['schemas']['MonitorInfoDto'];
+    };
+    AdminSystemStatusResponseDto: {
+      item: components['schemas']['SystemStatusDto'];
+    };
+    AdminAlertDto: {
+      /** @description 같은 징후를 묶는 키 (예: batch:today-notifications:FAILED) */
+      key: string;
+      /** @enum {string} */
+      level: 'critical' | 'warning';
+      /** @enum {string} */
+      source: 'SERVER' | 'BATCH' | 'EXTRACTION';
+      title: string;
+      detail: string;
+      /**
+       * Format: date-time
+       * @description 시작 · 마지막 확인 시각
+       */
+      since: string | null;
+    };
+    AdminAlertListResponseDto: {
+      items: components['schemas']['AdminAlertDto'][];
+      total: number;
+    };
+    AdminExtractionDailyDto: {
+      /** @description KST YYYY-MM-DD */
+      date: string;
+      requests: number;
+      /** @description 성공 판정 분모 (SUCCESS + PARTIAL + FAILED) */
+      judged: number;
+      success: number;
+    };
+    AdminExtractionOverviewDto: {
+      days: number;
+      /** @description 요청 수 (캐시 포함) */
+      requests: number;
+      cached: number;
+      /** @description 성공 판정 분모 (SUCCESS + PARTIAL + FAILED) */
+      judged: number;
+      success: number;
+      partial: number;
+      failed: number;
+      /** @description 스크래퍼 장애 */
+      unavailable: number;
+      /** @description 차단 도메인 */
+      blocked: number;
+      /** @description 아는 사이트의 홈 · 목록 링크라 거절 */
+      notPosting: number;
+      /** @description 캐시 응답 평균 ms */
+      avgCachedMs: number | null;
+      /** @description 새로 추출한 응답 평균 ms */
+      avgFreshMs: number | null;
+      /** @description 새로 추출한 결과 수 */
+      newExtractions: number;
+      /** @description 그중 browserless를 쓴 수 (비용) */
+      browserless: number;
+      /** @description LLM 토큰 합 (비용) */
+      llmTokens: number;
+      daily: components['schemas']['AdminExtractionDailyDto'][];
+    };
+    AdminExtractionOverviewResponseDto: {
+      item: components['schemas']['AdminExtractionOverviewDto'];
+    };
+    AdminExtractionSiteDto: {
+      /** @description 사이트 코드 */
+      site: string;
+      siteName: string;
+      requests: number;
+      judged: number;
+      success: number;
+      cached: number;
+      /** @description 키 규칙 실패 (site_fallback) — 링크 규칙이 바뀐 신호 */
+      keyFallback: number;
+      /** @description 새 추출 수 */
+      newExtractions: number;
+      /** @description 새 추출 중 LLM을 쓴 수 — HTML이 바뀐 신호 */
+      llm: number;
+    };
+    AdminExtractionSiteListResponseDto: {
+      items: components['schemas']['AdminExtractionSiteDto'][];
+    };
+    AdminExtractionDomainDto: {
+      domain: string;
+      requests: number;
+      judged: number;
+      success: number;
+      /** Format: date-time */
+      lastSeen: string;
+      /** @description 최근 추출 링크 예시 */
+      exampleUrl: string | null;
+      blocked: boolean;
+    };
+    AdminExtractionDomainListResponseDto: {
+      items: components['schemas']['AdminExtractionDomainDto'][];
+    };
+    AdminBlockedDomainDto: {
+      domain: string;
+      reason: string | null;
+      /** Format: date-time */
+      createdAt: string;
+    };
+    AdminBlockedDomainListResponseDto: {
+      items: components['schemas']['AdminBlockedDomainDto'][];
+    };
+    AdminBlockDomainDto: {
+      /**
+       * @description 이 도메인과 그 하위 도메인을 막는다
+       * @example example.com
+       */
+      domain: string;
+      reason?: string;
+    };
+    AdminBlockedDomainResponseDto: {
+      item: components['schemas']['AdminBlockedDomainDto'];
+    };
+    AdminExtractionResultDto: {
+      id: number;
+      postingKey: string;
+      url: string;
+      siteName: string | null;
+      status: string;
+      failure: string | null;
+      company: string | null;
+      position: string | null;
+      deadlineDate: string | null;
+      extractMethod: string | null;
+      /** @description 캐시로 돌려준 횟수 */
+      hitCount: number;
+      /** @description 다음 요청에서 다시 추출하도록 표시됨 */
+      refreshRequested: boolean;
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    AdminExtractionResultListResponseDto: {
+      items: components['schemas']['AdminExtractionResultDto'][];
+    };
+    AdminExtractionResultResponseDto: {
+      item: components['schemas']['AdminExtractionResultDto'];
     };
     PingResponseDto: {
       /**
@@ -6497,7 +6910,10 @@ export interface operations {
           | 'UPDATE_APP_SETTING'
           | 'CREATE_TEST_ACCOUNT'
           | 'UPDATE_TEST_ACCOUNT'
-          | 'RESEED_DEMO_POSTINGS';
+          | 'RESEED_DEMO_POSTINGS'
+          | 'BLOCK_EXTRACTION_DOMAIN'
+          | 'UNBLOCK_EXTRACTION_DOMAIN'
+          | 'REFRESH_EXTRACTION';
         targetType?:
           | 'USER'
           | 'INQUIRY'
@@ -6507,7 +6923,8 @@ export interface operations {
           | 'PUSH'
           | 'AUTH'
           | 'NOTICE'
-          | 'APP_SETTING';
+          | 'APP_SETTING'
+          | 'EXTRACTION';
         /** @description 조회 시작일 (KST, YYYY-MM-DD, 포함) */
         createdFrom?: string;
         /** @description 조회 종료일 (KST, YYYY-MM-DD, 포함) */
@@ -6525,6 +6942,39 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['AdminAuditListResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminBatchRunsController_summary: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminBatchJobSummaryResponseDto'];
         };
       };
       /** @description 유효하지 않은 admin 액세스 토큰 */
@@ -7250,6 +7700,376 @@ export interface operations {
         content?: never;
       };
       /** @description USER_NOT_FOUND */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminSystemStatusController_systemStatus: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminSystemStatusResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminSystemStatusController_alerts: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminAlertListResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminExtractionController_overview: {
+    parameters: {
+      query?: {
+        /** @description 최근 며칠 (오늘 · 7일 · 30일) */
+        days?: 1 | 7 | 30;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminExtractionOverviewResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminExtractionController_sites: {
+    parameters: {
+      query?: {
+        /** @description 최근 며칠 (오늘 · 7일 · 30일) */
+        days?: 1 | 7 | 30;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminExtractionSiteListResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminExtractionController_domains: {
+    parameters: {
+      query?: {
+        /** @description 최근 며칠 (오늘 · 7일 · 30일) */
+        days?: 1 | 7 | 30;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminExtractionDomainListResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminExtractionController_blockedDomains: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminBlockedDomainListResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminExtractionController_blockDomain: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminBlockDomainDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminBlockedDomainResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description DOMAIN_ALREADY_BLOCKED */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminExtractionController_unblockDomain: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        domain: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description 풀었다 */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description BLOCKED_DOMAIN_NOT_FOUND */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminExtractionController_searchResults: {
+    parameters: {
+      query: {
+        /** @description 링크 · 공고 키 · 기업명 일부 */
+        q: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminExtractionResultListResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminExtractionController_refresh: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminExtractionResultResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description EXTRACTION_NOT_FOUND */
       404: {
         headers: {
           [name: string]: unknown;
