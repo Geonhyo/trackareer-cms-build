@@ -44,3 +44,34 @@
 .muted {
   color: var(--fg-subtle);
 }
+.costTotals {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--x4);
+  margin-bottom: var(--x4);
+}
+.costRows {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--t3);
+}
+.costRows li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 7rem 7rem;
+  gap: var(--x3);
+  padding: var(--x2) 0;
+  border-bottom: 1px solid var(--stroke-muted);
+}
+.costRows li:first-child {
+  color: var(--fg-subtle);
+}
+.costRows li:last-child {
+  border-bottom: 0;
+}
+.costRows li > span:not(:first-child) {
+  text-align: right;
+}
+.costFoot {
+  margin-top: var(--x3);
+  font-size: var(--t2);
+}

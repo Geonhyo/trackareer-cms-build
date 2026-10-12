@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Badge, Card, DefinitionList, Grid, Notice, PageHeader, Stack } from '@/components/ui';
 import { AlertList } from '@/features/status/AlertList';
 import { BatchTable } from '@/features/status/BatchTable';
+import { CostCard } from '@/features/status/CostCard';
 import { loadAlerts } from '@/features/status/load-alerts';
 import { ResponseTimeChart } from '@/features/status/ResponseTimeChart';
 import styles from '@/features/status/status.module.css';
@@ -27,10 +28,14 @@ function formatUptime(seconds: number): string {
 }
 
 export default async function StatusPage() {
-  const [system, batches, alerts] = await Promise.all([
+  const [system, batches, alerts, costs] = await Promise.all([
     adminApi<Schemas['AdminSystemStatusResponseDto']>('/admin/system-status'),
     adminApi<Schemas['AdminBatchJobSummaryResponseDto']>('/admin/batch-runs/summary'),
     loadAlerts(),
+    // 비용은 부가 정보라 실패해도 화면은 그린다
+    adminApi<Schemas['AdminCostsResponseDto']>('/admin/costs')
+      .then((response) => response.item)
+      .catch(() => null),
   ]);
   const { server, database, monitor } = system.item;
   const monitorStatus = monitor.status ? MONITOR_STATUS[monitor.status] : null;
@@ -39,7 +44,7 @@ export default async function StatusPage() {
     <>
       <PageHeader
         title="상태"
-        description={`서버 · DB · 배치 · 외부 감시. ${formatDateTime(system.item.checkedAt)} 기준`}
+        description={`서버 · DB · 배치 · 외부 감시 · 비용. ${formatDateTime(system.item.checkedAt)} 기준`}
       />
       <Stack>
         <Card title="이상 징후">
@@ -139,6 +144,7 @@ export default async function StatusPage() {
         >
           <BatchTable jobs={batches.items} />
         </Card>
+        <CostCard costs={costs} />
       </Stack>
     </>
   );

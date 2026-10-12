@@ -37,6 +37,13 @@ export function formatNumber(value: number | null | undefined): string {
   return value === null || value === undefined ? '—' : value.toLocaleString('ko-KR');
 }
 
+/** 금액 → ₩1,200 (통화는 서버가 준 값, 없으면 숫자만) */
+export function formatCurrency(value: number | null | undefined, currency: string | null): string {
+  if (value === null || value === undefined) return '—';
+  if (!currency) return formatNumber(value);
+  return new Intl.NumberFormat('ko-KR', { style: 'currency', currency }).format(value);
+}
+
 /** 0~1 비율 → 12.3% */
 export function formatPercent(ratio: number | null | undefined, digits = 1): string {
   if (ratio === null || ratio === undefined) return '—';
