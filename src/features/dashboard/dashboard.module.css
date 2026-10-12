@@ -1,0 +1,197 @@
+/* ===== 툴팁 ===== */
+.tooltip {
+  background: var(--bg-default);
+  border: 1px solid var(--stroke);
+  border-radius: var(--r2);
+  box-shadow: var(--shadow-2);
+  padding: var(--x2) var(--x3);
+  font-size: var(--t3);
+}
+.tooltipLabel {
+  color: var(--fg-subtle);
+  margin-bottom: var(--x1);
+}
+.tooltipRow {
+  display: flex;
+  align-items: center;
+  gap: var(--x2);
+}
+.tooltipRow span:last-child {
+  color: var(--fg-muted);
+}
+.tooltipKey {
+  width: 12px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+/* ===== 지표 칸 ===== */
+.tiles {
+  display: grid;
+  gap: var(--x4);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.hero {
+  grid-column: span 2;
+  background: var(--brand-solid);
+  color: var(--fg-white);
+  border-color: var(--brand-solid);
+}
+@media (max-width: 560px) {
+  .hero {
+    grid-column: auto;
+  }
+}
+.hero * {
+  color: inherit !important;
+}
+.heroValue {
+  font-size: 48px;
+  line-height: 56px;
+  font-weight: var(--bold);
+  margin: var(--x1) 0;
+}
+.tileLink {
+  display: block;
+}
+.tileLink:hover > section {
+  border-color: var(--stroke);
+  box-shadow: var(--shadow-1);
+}
+.delta {
+  font-size: var(--t3);
+  font-weight: var(--medium);
+}
+.up {
+  color: var(--fg-positive);
+}
+.down {
+  color: var(--fg-critical);
+}
+
+/* ===== 가로 막대 목록 (순위 · 퍼널) ===== */
+.barList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--x2_5);
+}
+.barRow {
+  display: grid;
+  grid-template-columns: minmax(0, 220px) minmax(0, 1fr) auto;
+  gap: var(--x3);
+  align-items: center;
+  font-size: var(--t3);
+}
+@media (max-width: 640px) {
+  .barRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .barTrack {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+}
+.barName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.barName small {
+  color: var(--fg-subtle);
+  margin-left: var(--x1);
+}
+.barTrack {
+  height: 10px;
+  background: var(--bg-neutral-weak);
+  border-radius: var(--rfull);
+  overflow: hidden;
+}
+.barFill {
+  height: 100%;
+  border-radius: var(--rfull);
+  background: var(--brand-solid);
+}
+.barValue {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  min-width: 72px;
+}
+.barValue small {
+  color: var(--fg-subtle);
+  margin-left: var(--x1);
+}
+
+/* ===== 코호트 ===== */
+.cohortWrap {
+  overflow-x: auto;
+}
+.cohort {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 2px;
+  font-size: var(--t3);
+}
+.cohort th {
+  color: var(--fg-subtle);
+  font-weight: var(--medium);
+  padding: var(--x1) var(--x2);
+  text-align: center;
+  white-space: nowrap;
+}
+.cohort th:first-child,
+.cohort td:first-child {
+  text-align: left;
+}
+.cohort td {
+  padding: var(--x2);
+  text-align: center;
+  border-radius: 4px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.cohortEmpty {
+  color: var(--fg-subtle);
+}
+.note {
+  font-size: var(--t2);
+  color: var(--fg-subtle);
+  margin-top: var(--x2);
+}
+.twoCols {
+  display: grid;
+  gap: var(--x4);
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+}
+@media (max-width: 480px) {
+  .twoCols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.rankTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t3);
+}
+.rankTable td {
+  padding: var(--x2) var(--x1);
+  border-bottom: 1px solid var(--stroke-muted);
+  vertical-align: top;
+}
+.rankTable tr:last-child td {
+  border-bottom: 0;
+}
+.rankNo {
+  width: 28px;
+  color: var(--fg-subtle);
+  font-variant-numeric: tabular-nums;
+}
+.rankMeta {
+  color: var(--fg-subtle);
+  font-size: var(--t2);
+  margin-top: 2px;
+}
+.rankCount {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}

@@ -981,6 +981,57 @@ export interface paths {
     patch: operations['AdminAuthController_changePassword'];
     trace?: never;
   };
+  '/admin/stats/overview': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** cms 대시보드 현황 (북극성 · 답변 대기 문의 · 가입 · 활성 회원 · DAU/WAU/MAU) */
+    get: operations['AdminStatsController_overview'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/stats/growth': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** cms 대시보드 성장 (주별 가입 · WAU · 북극성 · 탈퇴, 퍼널, 재방문 코호트) */
+    get: operations['AdminStatsController_growth'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/stats/posting-ranking': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** cms 대시보드 공고 순위 (많이 담긴 기업 · 공고, 출처, 유형) */
+    get: operations['AdminStatsController_postingRanking'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/admin/stats/summary': {
     parameters: {
       query?: never;
@@ -988,7 +1039,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** 대시보드 통계 요약 (핵심5, 즉석 집계) */
+    /**
+     * 대시보드 통계 요약 (핵심5, 즉석 집계)
+     * @deprecated
+     */
     get: operations['AdminStatsController_summary'];
     put?: never;
     post?: never;
@@ -1005,7 +1059,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** 회원 분포 (탈퇴사유[기간]·마케팅동의율[스냅샷]·플랫폼[스냅샷]) */
+    /**
+     * 회원 분포 (탈퇴사유[기간]·마케팅동의율[스냅샷]·플랫폼[스냅샷])
+     * @deprecated
+     */
     get: operations['AdminStatsController_members'];
     put?: never;
     post?: never;
@@ -1022,7 +1079,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** 공고 통계 (지원전환율·등록→지원 소요시간) ⚠ survivorship 편향 */
+    /**
+     * 공고 통계 (지원전환율·등록→지원 소요시간) ⚠ survivorship 편향
+     * @deprecated
+     */
     get: operations['AdminStatsController_postings'];
     put?: never;
     post?: never;
@@ -1039,7 +1099,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** 알림 인게이지먼트 (읽음률) */
+    /**
+     * 알림 인게이지먼트 (읽음률)
+     * @deprecated
+     */
     get: operations['AdminStatsController_engagement'];
     put?: never;
     post?: never;
@@ -1056,7 +1119,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** 활성 사용자 (DAU series·WAU·MAU) ⚠ survivorship 편향 */
+    /**
+     * 활성 사용자 (DAU series·WAU·MAU) ⚠ survivorship 편향
+     * @deprecated
+     */
     get: operations['AdminStatsController_activeUsers'];
     put?: never;
     post?: never;
@@ -1073,7 +1139,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** 통계 추세 (daily_stat 주/월 롤업) */
+    /**
+     * 통계 추세 (daily_stat 주/월 롤업)
+     * @deprecated
+     */
     get: operations['AdminStatsController_trends'];
     put?: never;
     post?: never;
@@ -2493,6 +2562,148 @@ export interface components {
     AdminChangePasswordDto: {
       currentPassword: string;
       newPassword: string;
+    };
+    AdminPeriodCountDto: {
+      /** @description 이번 기간 */
+      current: number;
+      /** @description 바로 앞 같은 길이 기간 */
+      previous: number;
+    };
+    AdminDailyCountDto: {
+      /** @description KST YYYY-MM-DD */
+      date: string;
+      count: number;
+    };
+    AdminOverviewDto: {
+      /** @description 기준일 (오늘, KST) */
+      today: string;
+      /** @description 북극성: 주간 지원 진행 회원 — 최근 7일(오늘 포함)에 지원 완료 · 전형 완료 · 결과 기록 중 하나를 한 회원 수 */
+      northStar: components['schemas']['AdminPeriodCountDto'];
+      /** @description 답변 대기 문의 (내부 계정 포함 — 작업 목록이라) */
+      pendingInquiries: number;
+      signupsToday: number;
+      /** @description 최근 7일 가입 vs 그 앞 7일 */
+      signups7d: components['schemas']['AdminPeriodCountDto'];
+      /** @description 활성 회원 (탈퇴하지 않은 회원) */
+      activeMembers: number;
+      dauToday: number;
+      dauYesterday: number;
+      /** @description 최근 7일 접속 회원 */
+      wau: number;
+      /** @description 최근 30일 접속 회원 */
+      mau: number;
+      /** @description 최근 14일 DAU (오래된 순, 빈 날 0) */
+      dauSeries: components['schemas']['AdminDailyCountDto'][];
+    };
+    AdminOverviewResponseDto: {
+      item: components['schemas']['AdminOverviewDto'];
+    };
+    AdminSignupsByProviderDto: {
+      KAKAO: number;
+      APPLE: number;
+      PASSWORD: number;
+    };
+    AdminGrowthWeekDto: {
+      /** @description 주 시작일 (월요일, KST) */
+      weekStart: string;
+      signups: number;
+      signupsByProvider: components['schemas']['AdminSignupsByProviderDto'];
+      /** @description 그 주에 접속한 회원 */
+      wau: number;
+      /** @description 그 주의 북극성 (지원 진행 회원) */
+      northStar: number;
+      /** @description 그 주의 탈퇴 요청 */
+      withdrawals: number;
+    };
+    AdminFunnelDto: {
+      /** @description 가입 기간 시작 (KST) */
+      from: string;
+      /** @description 가입 기간 끝 (KST). 2주차 재방문을 볼 수 있게 14일 전까지 */
+      to: string;
+      signedUp: number;
+      /** @description 공고를 한 번이라도 등록 */
+      registered: number;
+      /** @description 지원 완료 · 전형 완료를 한 번이라도 기록 */
+      applied: number;
+      /** @description 가입 8~14일째에 다시 접속 */
+      returnedWeek2: number;
+    };
+    AdminCohortDto: {
+      /** @description 가입 주 (월요일) */
+      weekStart: string;
+      size: number;
+      /** @description 가입 다음 1~7주차에 접속한 비율 0~1. 아직 오지 않은 주는 null */
+      retention: number[] | null;
+    };
+    AdminReasonCountDto: {
+      /** @enum {string} */
+      reasonType:
+        | 'JOB_SUCCESS'
+        | 'FEATURES_LACKING'
+        | 'COMPLEX_OR_INCONVENIENT'
+        | 'NOT_HELPFUL'
+        | 'STAGE_MISMATCH'
+        | 'NOTIFICATION_BURDEN'
+        | 'USING_OTHER_SERVICE'
+        | 'ETC';
+      count: number;
+    };
+    AdminGrowthDto: {
+      /** @description 오래된 순 */
+      weeks: components['schemas']['AdminGrowthWeekDto'][];
+      funnel: components['schemas']['AdminFunnelDto'];
+      /** @description 최근 8개 가입 주, 오래된 순 */
+      cohorts: components['schemas']['AdminCohortDto'][];
+      /** @description 기간 안 탈퇴 사유 (복수 선택) */
+      withdrawalReasons: components['schemas']['AdminReasonCountDto'][];
+    };
+    AdminGrowthResponseDto: {
+      item: components['schemas']['AdminGrowthDto'];
+    };
+    AdminCompanyRankDto: {
+      company: string;
+      /** @description 담은 회원 수 */
+      users: number;
+      /** @description 공고 수 */
+      postings: number;
+    };
+    AdminPostingRankDto: {
+      /** @description 추출 결과 id (같은 링크) */
+      extractionId: number;
+      company: string | null;
+      position: string | null;
+      /** @description 사이트 이름 */
+      siteName: string | null;
+      /** @description 마감일 KST */
+      deadlineDate: string | null;
+      url: string;
+      users: number;
+    };
+    AdminSourceCountDto: {
+      /** @description 사이트 코드 · OTHER(기타 사이트 링크) · MANUAL(직접 입력) · UNKNOWN(구버전) */
+      key: string;
+      /** @description 사이트 이름 (사이트 코드일 때만, 나머지 키는 null) */
+      siteName: string | null;
+      count: number;
+    };
+    AdminTypeCountDto: {
+      type: string;
+      count: number;
+    };
+    AdminPostingRankingDto: {
+      from: string;
+      to: string;
+      /** @description 기간 안 등록 공고 수 */
+      totalPostings: number;
+      /** @description 기간 안 공고를 등록한 회원 수 */
+      totalUsers: number;
+      companies: components['schemas']['AdminCompanyRankDto'][];
+      postings: components['schemas']['AdminPostingRankDto'][];
+      sources: components['schemas']['AdminSourceCountDto'][];
+      types: components['schemas']['AdminTypeCountDto'][];
+    };
+    AdminPostingRankingResponseDto: {
+      item: components['schemas']['AdminPostingRankingDto'];
     };
     AdminSignupPointDto: {
       /** @description KST 일자 (YYYY-MM-DD) */
@@ -5692,6 +5903,111 @@ export interface operations {
        *
        *     유효하지 않은 admin 액세스 토큰
        */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminStatsController_overview: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminOverviewResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminStatsController_growth: {
+    parameters: {
+      query?: {
+        /** @description 최근 몇 주 */
+        weeks?: components['schemas']['Object'];
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminGrowthResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminStatsController_postingRanking: {
+    parameters: {
+      query?: {
+        /** @description 최근 며칠에 등록된 공고 */
+        days?: 7 | 30 | 90;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminPostingRankingResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
       401: {
         headers: {
           [name: string]: unknown;
