@@ -96,3 +96,19 @@ export const CONSENT_SOURCE_LABEL: Record<string, string> = {
   NOTIFICATION_SETTING: '알림 설정',
   ADMIN: '관리자',
 };
+
+export const POSTING_TYPE_LABEL: Record<string, string> = {
+  NEW_GRAD: '신입',
+  EXPERIENCED: '경력',
+  EXPERIENCE_INTERN: '체험형 인턴',
+  CONVERSION_INTERN: '채용전환형 인턴',
+  ROLLING: '상시 채용',
+  CLOSED_ON_HIRE: '채용시 마감',
+};
+
+// 공고 순위 출처 중 사이트가 아닌 것 (사이트 이름은 서버가 준다)
+export const POSTING_ORIGIN_LABEL: Record<string, string> = {
+  MANUAL: '직접 입력',
+  OTHER: '기타 사이트 링크',
+  UNKNOWN: '구버전 (출처 없음)',
+};
