@@ -3,19 +3,24 @@ import styles from '@/components/layout/AppShell.module.css';
 import { Button } from '@/components/ui';
 import { adminApi } from '@/shared/api/admin-api';
 import type { Schemas } from '@/shared/api/types';
+import { loadAlerts } from '@/features/status/load-alerts';
 import { logoutAction } from '@/shared/auth/actions';
 import { getSessionAdmin, isSuperAdmin } from '@/shared/auth/session';
 
-// 메뉴 옆 숫자: 답변 대기 문의
+// 메뉴 옆 숫자: 답변 대기 문의, 이상 징후 (상태 · 공고 추출)
 async function loadBadges(): Promise<Record<string, number>> {
-  try {
-    const result = await adminApi<Schemas['AdminInquiryListResponseDto']>('/admin/inquiries', {
+  const [inquiries, alerts] = await Promise.all([
+    adminApi<Schemas['AdminInquiryListResponseDto']>('/admin/inquiries', {
       query: { status: 'PENDING', limit: 1 },
-    });
-    return { '/inquiries': result.total };
-  } catch {
-    return {};
-  }
+    }).catch(() => null),
+    loadAlerts(),
+  ]);
+  const count = (source: string) => alerts?.filter((alert) => alert.source === source).length ?? 0;
+  return {
+    '/inquiries': inquiries?.total ?? 0,
+    '/status': count('SERVER') + count('BATCH'),
+    '/extraction': count('EXTRACTION'),
+  };
 }
 
 export default async function CmsLayout({ children }: { children: React.ReactNode }) {

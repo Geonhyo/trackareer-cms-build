@@ -1,0 +1,27 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--t3);
+}
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--x3);
+  padding: var(--x2_5) 0;
+  border-bottom: 1px solid var(--stroke-muted);
+}
+.item:last-child {
+  border-bottom: 0;
+}
+.meta {
+  color: var(--fg-subtle);
+  font-size: var(--t2);
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+.search {
+  display: flex;
+  gap: var(--x2);
+  margin-bottom: var(--x3);
+}
