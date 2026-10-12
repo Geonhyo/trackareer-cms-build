@@ -2926,7 +2926,8 @@ export interface components {
       allowDismissForever: boolean;
       /** Format: date-time */
       startsAt: string;
-      endsAt: Record<string, never> | null;
+      /** Format: date-time */
+      endsAt: string | null;
       /** Format: date-time */
       createdAt: string;
       /** Format: date-time */
@@ -2958,7 +2959,7 @@ export interface components {
       /** @description 게시 시작 (ISO, 기본 지금) */
       startsAt?: string;
       /** @description 게시 종료 (ISO). 비우면 계속 남는다 */
-      endsAt?: Record<string, never> | null;
+      endsAt?: string | null;
     };
     AdminNoticeResponseDto: {
       item: components['schemas']['AdminNoticeDto'];
@@ -2985,7 +2986,7 @@ export interface components {
       /** @description 게시 시작 (ISO, 기본 지금) */
       startsAt?: string;
       /** @description 게시 종료 (ISO). 비우면 계속 남는다 */
-      endsAt?: Record<string, never> | null;
+      endsAt?: string | null;
     };
     AdminMaintenanceDto: {
       /** @description 켜면 모든 앱이 점검 화면을 띄운다 */
