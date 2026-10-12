@@ -203,8 +203,8 @@
   font-weight: var(--medium);
 }
 .statValue {
-  font-size: var(--t12);
-  line-height: var(--lh12);
+  font-size: var(--t11);
+  line-height: var(--lh11);
   font-weight: var(--bold);
   font-variant-numeric: tabular-nums;
 }
