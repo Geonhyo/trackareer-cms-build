@@ -100,7 +100,7 @@ export function Card({
         <div className={styles.cardHeader}>
           <div>
             {title && <h2 className={styles.cardTitle}>{title}</h2>}
-            {description && <p className={styles.cardDescription}>{description}</p>}
+            {description && <div className={styles.cardDescription}>{description}</div>}
           </div>
           {action}
         </div>
@@ -123,7 +123,7 @@ export function PageHeader({
     <header className={styles.pageHeader}>
       <div>
         <h1 className={styles.pageTitle}>{title}</h1>
-        {description && <p className={styles.pageDescription}>{description}</p>}
+        {description && <div className={styles.pageDescription}>{description}</div>}
       </div>
       {action}
     </header>

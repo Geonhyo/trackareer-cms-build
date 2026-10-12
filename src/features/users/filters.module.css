@@ -1,0 +1,13 @@
+.filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) repeat(auto-fit, minmax(130px, 1fr));
+  gap: var(--x3);
+  align-items: end;
+  margin-bottom: var(--x4);
+}
+.actions {
+  display: flex;
+  gap: var(--x2);
+  align-items: center;
+  flex-wrap: wrap;
+}
