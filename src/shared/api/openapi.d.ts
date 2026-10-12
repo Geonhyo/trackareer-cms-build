@@ -1519,6 +1519,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/admin/costs': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 인프라 비용 — GCP 결제 내보내기(BigQuery)에서 이번 달 · 지난달 서비스별 금액(크레딧 차감, 1시간 캐시) */
+    get: operations['AdminSystemStatusController_costs'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/admin/alerts': {
     parameters: {
       query?: never;
@@ -3594,6 +3611,41 @@ export interface components {
     };
     AdminSystemStatusResponseDto: {
       item: components['schemas']['SystemStatusDto'];
+    };
+    ServiceCostDto: {
+      /** @description GCP 서비스 이름 (예: Cloud Run, Artifact Registry) */
+      service: string;
+      /** @description 크레딧(무료 등급 포함)을 뺀 금액 */
+      cost: number;
+    };
+    MonthlyCostDto: {
+      /** @description 청구 월 (YYYY-MM, 미국 태평양 시간 기준) */
+      month: string;
+      /** @description 크레딧을 뺀 합계 */
+      total: number;
+      /** @description 서비스별, 금액 큰 순. 0원인 서비스도 포함 */
+      services: components['schemas']['ServiceCostDto'][];
+    };
+    CostsDto: {
+      /** @enum {string} */
+      state: 'OK' | 'NOT_CONFIGURED' | 'WAITING' | 'ERROR';
+      /** @description 결제 계정 통화 (예: KRW) */
+      currency: string | null;
+      currentMonth: components['schemas']['MonthlyCostDto'] | null;
+      previousMonth: components['schemas']['MonthlyCostDto'] | null;
+      /**
+       * Format: date-time
+       * @description 결제 내보내기가 마지막으로 쓴 시각. 보통 몇 시간 늦다
+       */
+      exportedAt: string | null;
+      /**
+       * Format: date-time
+       * @description BigQuery에서 읽은 시각(1시간 캐시)
+       */
+      fetchedAt: string | null;
+    };
+    AdminCostsResponseDto: {
+      item: components['schemas']['CostsDto'];
     };
     AdminAlertDto: {
       /** @description 같은 징후를 묶는 키 (예: batch:today-notifications:FAILED) */
@@ -7723,6 +7775,39 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['AdminSystemStatusResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminSystemStatusController_costs: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminCostsResponseDto'];
         };
       };
       /** @description 유효하지 않은 admin 액세스 토큰 */
