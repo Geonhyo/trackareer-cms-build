@@ -1,0 +1,29 @@
+.list {
+  display: flex;
+  flex-direction: column;
+}
+.row {
+  padding: var(--x3_5) 0;
+  border-bottom: 1px solid var(--stroke-muted);
+}
+.row:last-child {
+  border-bottom: 0;
+}
+.summary {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--x3);
+  flex-wrap: wrap;
+  align-items: center;
+}
+.meta {
+  margin-top: var(--x1);
+  font-size: var(--t3);
+  color: var(--fg-subtle);
+}
+.edit {
+  margin-top: var(--x3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--x2);
+}

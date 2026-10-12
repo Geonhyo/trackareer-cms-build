@@ -59,3 +59,15 @@ export function formatRelative(value: string | Date | null | undefined): string 
 export function todayKst(): string {
   return new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 10);
 }
+
+/** ISO 시각 → <input type="datetime-local"> 값 (KST, YYYY-MM-DDTHH:mm) */
+export function toKstInputValue(value: string | Date | null | undefined): string {
+  if (!value) return '';
+  return new Date(new Date(value).getTime() + 9 * 3600_000).toISOString().slice(0, 16);
+}
+
+/** <input type="datetime-local"> 값(KST) → 시간대를 붙인 ISO. 비었으면 null */
+export function fromKstInputValue(value: FormDataEntryValue | null): string | null {
+  const text = typeof value === 'string' ? value.trim() : '';
+  return text ? `${text}:00+09:00` : null;
+}
