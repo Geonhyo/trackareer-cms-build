@@ -1,0 +1,46 @@
+.screen {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: var(--x6) var(--x4);
+}
+.panel {
+  width: 100%;
+  max-width: 380px;
+  background: var(--bg-default);
+  border: 1px solid var(--stroke-muted);
+  border-radius: var(--r4);
+  padding: var(--x8) var(--x6);
+  box-shadow: var(--shadow-1);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--x2);
+  margin-bottom: var(--x6);
+  font-weight: var(--bold);
+  font-size: var(--t6);
+}
+.brand small {
+  font-size: var(--t3);
+  font-weight: var(--medium);
+  color: var(--fg-subtle);
+}
+.title {
+  font-size: var(--t7);
+  font-weight: var(--bold);
+  margin-bottom: var(--x1);
+}
+.description {
+  color: var(--fg-muted);
+  margin-bottom: var(--x6);
+}
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--x4);
+}
+.form button[type='submit'] {
+  height: 44px;
+  margin-top: var(--x2);
+}
