@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { LinkButton, PageHeader, Stack } from '@/components/ui';
+import { LinkButton, PageHeader, Row, Stack } from '@/components/ui';
 import { InstagramAccountCard } from '@/features/instagram-dm/InstagramAccountCard';
 import { InstagramDmTable } from '@/features/instagram-dm/InstagramDmTable';
 import { AlertList } from '@/features/status/AlertList';
@@ -23,9 +23,13 @@ export default async function InstagramDmPage() {
         title="인스타 DM"
         description="등록한 게시물에 댓글이 달리면 DM으로 링크를 보내요. 팔로워에게만 링크가 가요. 한도에 걸린 첫 DM은 30분마다 다시 보내요(7일 안)."
         action={
-          <LinkButton href="/instagram-dm/new" variant="primary">
-            게시물 등록
-          </LinkButton>
+          <Row>
+            <LinkButton href="/instagram-dm/templates">DM 템플릿</LinkButton>
+            <LinkButton href="/instagram-dm/replies">댓글 답글 문구</LinkButton>
+            <LinkButton href="/instagram-dm/new" variant="primary">
+              게시물 등록
+            </LinkButton>
+          </Row>
         }
       />
       <Stack>

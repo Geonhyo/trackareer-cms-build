@@ -13,14 +13,15 @@ export const metadata: Metadata = { title: '인스타 DM 게시물' };
 
 export default async function InstagramDmPostPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const post = await adminApi<Schemas['AdminInstagramDmPostResponseDto']>(
-    `/admin/instagram-dm/posts/${id}`,
-  )
-    .then((result) => result.item)
-    .catch((error: unknown) => {
-      if (error instanceof ApiError && error.status === 404) notFound();
-      throw error;
-    });
+  const [post, { items: templates }] = await Promise.all([
+    adminApi<Schemas['AdminInstagramDmPostResponseDto']>(`/admin/instagram-dm/posts/${id}`)
+      .then((result) => result.item)
+      .catch((error: unknown) => {
+        if (error instanceof ApiError && error.status === 404) notFound();
+        throw error;
+      }),
+    adminApi<Schemas['AdminInstagramDmTemplateListResponseDto']>('/admin/instagram-dm/templates'),
+  ]);
 
   return (
     <div style={{ maxWidth: 880 }}>
@@ -48,7 +49,7 @@ export default async function InstagramDmPostPage({ params }: { params: Promise<
           </Row>
         }
       />
-      <InstagramDmForm post={post} />
+      <InstagramDmForm post={post} templates={templates} />
     </div>
   );
 }
