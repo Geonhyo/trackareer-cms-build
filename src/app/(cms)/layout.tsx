@@ -7,7 +7,7 @@ import { loadAlerts } from '@/features/status/load-alerts';
 import { logoutAction } from '@/shared/auth/actions';
 import { getSessionAdmin, isSuperAdmin } from '@/shared/auth/session';
 
-// 메뉴 옆 숫자: 답변 대기 문의, 이상 징후 (상태 · 공고 추출)
+// 메뉴 옆 숫자: 답변 대기 문의, 이상 징후 (상태 · 공고 추출 · 인스타 DM)
 async function loadBadges(): Promise<Record<string, number>> {
   const [inquiries, alerts] = await Promise.all([
     adminApi<Schemas['AdminInquiryListResponseDto']>('/admin/inquiries', {
@@ -20,6 +20,7 @@ async function loadBadges(): Promise<Record<string, number>> {
     '/inquiries': inquiries?.total ?? 0,
     '/status': count('SERVER') + count('BATCH'),
     '/extraction': count('EXTRACTION'),
+    '/instagram-dm': count('INSTAGRAM'),
   };
 }
 

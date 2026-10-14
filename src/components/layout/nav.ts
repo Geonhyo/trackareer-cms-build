@@ -12,6 +12,7 @@ export const NAV: NavGroup[] = [
       { href: '/users', label: '회원' },
       { href: '/inquiries', label: '문의' },
       { href: '/notices', label: '공지' },
+      { href: '/instagram-dm', label: '인스타 DM' },
       { href: '/push', label: '푸시', superOnly: true },
     ],
   },

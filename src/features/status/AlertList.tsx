@@ -11,6 +11,7 @@ const SOURCE_PAGE: Record<string, { href: string; label: string }> = {
   SERVER: { href: '/status', label: '상태' },
   BATCH: { href: '/status', label: '상태' },
   EXTRACTION: { href: '/extraction', label: '공고 추출' },
+  INSTAGRAM: { href: '/instagram-dm', label: '인스타 DM' },
 };
 
 export function AlertList({ alerts, withLinks }: { alerts: Alert[]; withLinks?: boolean }) {
