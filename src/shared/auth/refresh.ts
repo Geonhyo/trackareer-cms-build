@@ -1,24 +1,19 @@
-import type { AdminLoginResponse } from '@/shared/api/types';
+import type { AdminRefreshResponse } from '@/shared/api/types';
 import type { SessionAdmin } from './cookies';
 
-type Refreshed = { tokens: { accessToken: string; refreshToken: string }; admin: SessionAdmin };
+type Refreshed = {
+  tokens: Pick<AdminRefreshResponse, 'accessToken' | 'refreshToken'>;
+  admin: SessionAdmin;
+};
 
-// 서버는 갱신 토큰을 회전시킨다(한 번 쓰면 끝). 한 화면이 요청을 동시에 여러 개 보내도
-// 갱신은 한 번만 하고 같은 결과를 나눠 쓴다. 늦게 온 요청도 받을 수 있게 잠깐 남겨 둔다.
-const SHARE_MS = 15_000;
-const inflight = new Map<string, Promise<Refreshed | null>>();
-
-export function refreshSession(refreshToken: string, email: string): Promise<Refreshed | null> {
-  const shared = inflight.get(refreshToken);
-  if (shared) return shared;
-
-  const promise = requestRefresh(refreshToken, email);
-  inflight.set(refreshToken, promise);
-  setTimeout(() => inflight.delete(refreshToken), SHARE_MS);
-  return promise;
-}
-
-async function requestRefresh(refreshToken: string, email: string): Promise<Refreshed | null> {
+/**
+ * 접근 토큰 갱신. 서버가 갱신 토큰을 회전시키고, 같은 토큰으로 겹친 요청(인스턴스가 달라도)은
+ * 서버가 앞 토큰을 30초 받아 접근 토큰만 준다(refreshToken null → 갱신 토큰 쿠키는 그대로).
+ */
+export async function refreshSession(
+  refreshToken: string,
+  email: string,
+): Promise<Refreshed | null> {
   const baseUrl = process.env.ADMIN_API_URL?.replace(/\/$/, '');
   if (!baseUrl) return null;
   try {
@@ -29,7 +24,7 @@ async function requestRefresh(refreshToken: string, email: string): Promise<Refr
       cache: 'no-store',
     });
     if (!response.ok) return null;
-    const body = (await response.json()) as AdminLoginResponse;
+    const body = (await response.json()) as AdminRefreshResponse;
     return {
       tokens: { accessToken: body.accessToken, refreshToken: body.refreshToken },
       admin: { ...body.admin, email },
