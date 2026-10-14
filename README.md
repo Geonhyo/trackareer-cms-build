@@ -37,7 +37,7 @@ src/
 
 - 이메일 + 비밀번호(서버 `/admin/auth`). 토큰은 **httpOnly 쿠키**(`cms_at` 30분 · `cms_rt` 7일 · `cms_admin`)라 브라우저 JS가 읽지 못한다.
 - 브라우저는 서버 API를 직접 부르지 않는다. 서버 컴포넌트 · 서버 액션이 `ADMIN_API_URL`로 부른다 → CORS 필요 없음.
-- `proxy.ts`가 요청마다 접근 토큰이 2분 안에 끝나면 갱신한다. 서버가 갱신 토큰을 회전시키므로 같은 토큰의 동시 갱신은 한 번만 하고 결과를 나눠 쓴다(인스턴스 메모리).
+- `proxy.ts`가 요청마다 접근 토큰이 2분 안에 끝나면 갱신한다. 서버가 갱신 토큰을 회전시키므로, 같은 인스턴스에서 겹친 갱신은 한 번만 하고 결과를 나눠 쓴다. 다른 인스턴스끼리 겹치면 서버가 앞 토큰을 30초 받아 접근 토큰만 주고(`refreshToken: null`), 이때는 갱신 토큰 쿠키를 건드리지 않는다.
 - 권한(최고관리자 전용 화면 · 버튼)은 서버 API가 막고, 화면은 안내만 한다.
 
 ## 실행
@@ -50,14 +50,10 @@ pnpm lint && pnpm typecheck
 pnpm gen:api                 # 서버 openapi.json → src/shared/api/openapi.d.ts (서버를 띄운 채로)
 ```
 
-## 배포 (Cloud Run)
+## 배포 (Vercel)
 
-```bash
-docker build -t trackareer-cms .
-# Cloud Run 환경변수: ADMIN_API_URL=https://app-api.trackareer.com (서버 전용)
-```
-
-- Next `output: 'standalone'` 이미지, `PORT`(Cloud Run 8080)로 뜬다.
-- **최대 인스턴스 1을 권장**: 토큰 갱신 공유와 서버 액션 암호화 키가 인스턴스 메모리 · 빌드마다라서. 여럿으로 늘리면 빌드 ARG `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`(base64 32바이트)를 고정한다.
+- Vercel 프로젝트 환경변수: `ADMIN_API_URL=https://app-api.trackareer.com` (서버 전용, `NEXT_PUBLIC_` 아님 — 바꿔도 다시 빌드할 필요 없다)
+- 함수 리전은 서울(`vercel.json`의 `icn1`). 화면마다 서버 API를 부르므로 서버(서울)와 가까워야 한다.
 - 쿠키는 운영(`NODE_ENV=production`)에서 `Secure`라 https 주소로만 로그인된다.
 - 구 trackareer-admin Cloud Run 서비스는 이 서비스를 올린 뒤 내린다.
+- `Dockerfile`(Next standalone)은 Cloud Run 등 다른 곳에 올릴 때 쓴다. Vercel은 쓰지 않는다.

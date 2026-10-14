@@ -2744,6 +2744,12 @@ export interface components {
     AdminRefreshDto: {
       refreshToken: string;
     };
+    AdminRefreshResponseDto: {
+      accessToken: string;
+      /** @description 새 refresh token. 같은 토큰으로 동시에 갱신한 요청 중 늦은 쪽(30초 유예)은 null — 이미 받은 새 토큰을 그대로 쓴다 */
+      refreshToken: string | null;
+      admin: components['schemas']['AdminSummaryDto'];
+    };
     AdminLogoutDto: {
       refreshToken: string;
     };
@@ -6288,7 +6294,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['AdminLoginResponseDto'];
+          'application/json': components['schemas']['AdminRefreshResponseDto'];
         };
       };
       /** @description 유효하지 않은 리프레시 토큰 (INVALID_REFRESH_TOKEN) */
