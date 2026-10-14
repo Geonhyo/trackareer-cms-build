@@ -1673,6 +1673,43 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/admin/instagram-dm/posts': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 인스타 DM 게시물 목록 (최근 등록순) + 서버 설정 여부 */
+    get: operations['AdminInstagramDmController_list'];
+    put?: never;
+    /** 인스타 DM 게시물 등록 */
+    post: operations['AdminInstagramDmController_create'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/instagram-dm/posts/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 인스타 DM 게시물 하나 */
+    get: operations['AdminInstagramDmController_get'];
+    put?: never;
+    post?: never;
+    /** 인스타 DM 게시물 삭제 */
+    delete: operations['AdminInstagramDmController_remove'];
+    options?: never;
+    head?: never;
+    /** 인스타 DM 게시물 수정 (끄려면 isActive=false) */
+    patch: operations['AdminInstagramDmController_update'];
+    trace?: never;
+  };
   '/ping': {
     parameters: {
       query?: never;
@@ -1684,6 +1721,24 @@ export interface paths {
     get: operations['HealthController_ping'];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/webhooks/instagram': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Meta 웹훅 등록 확인 (확인 토큰이 맞으면 challenge를 그대로 돌려준다) */
+    get: operations['InstagramWebhookController_verify'];
+    put?: never;
+    /** 댓글 · DM 이벤트 수신 (처리 실패해도 200 — Meta 재전송 방지) */
+    post: operations['InstagramWebhookController_receive'];
     delete?: never;
     options?: never;
     head?: never;
@@ -2746,9 +2801,9 @@ export interface components {
     };
     AdminRefreshResponseDto: {
       accessToken: string;
+      admin: components['schemas']['AdminSummaryDto'];
       /** @description 새 refresh token. 같은 토큰으로 동시에 갱신한 요청 중 늦은 쪽(30초 유예)은 null — 이미 받은 새 토큰을 그대로 쓴다 */
       refreshToken: string | null;
-      admin: components['schemas']['AdminSummaryDto'];
     };
     AdminLogoutDto: {
       refreshToken: string;
@@ -3165,7 +3220,10 @@ export interface components {
         | 'RESEED_DEMO_POSTINGS'
         | 'BLOCK_EXTRACTION_DOMAIN'
         | 'UNBLOCK_EXTRACTION_DOMAIN'
-        | 'REFRESH_EXTRACTION';
+        | 'REFRESH_EXTRACTION'
+        | 'CREATE_INSTAGRAM_DM_POST'
+        | 'UPDATE_INSTAGRAM_DM_POST'
+        | 'DELETE_INSTAGRAM_DM_POST';
       /** @enum {string} */
       targetType:
         | 'USER'
@@ -3177,7 +3235,8 @@ export interface components {
         | 'AUTH'
         | 'NOTICE'
         | 'APP_SETTING'
-        | 'EXTRACTION';
+        | 'EXTRACTION'
+        | 'INSTAGRAM_DM_POST';
       /** @description 대상 식별자 raw (이름 해석 안 함) */
       targetId: string | null;
       /** @description 비고 (role 변경·email 등; 시크릿 미포함) */
@@ -3786,6 +3845,71 @@ export interface components {
     };
     AdminExtractionResultResponseDto: {
       item: components['schemas']['AdminExtractionResultDto'];
+    };
+    AdminInstagramDmPostDto: {
+      id: number;
+      title: string;
+      postUrl: string;
+      shortcode: string;
+      keyword: string | null;
+      message: string;
+      linkUrl: string;
+      buttonLabel: string | null;
+      isActive: boolean;
+      /** @description 첫 DM을 보낸 수 */
+      firstDmCount: number;
+      /** @description 팔로우 확인 뒤 링크를 보낸 수 */
+      linkSentCount: number;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    AdminInstagramDmPostListResponseDto: {
+      items: components['schemas']['AdminInstagramDmPostDto'][];
+      /** @description 서버에 인스타 계정 ID · 토큰 · 앱 시크릿이 모두 설정됐는지 (아니면 DM이 나가지 않음) */
+      configured: boolean;
+    };
+    AdminInstagramDmPostResponseDto: {
+      item: components['schemas']['AdminInstagramDmPostDto'];
+    };
+    AdminCreateInstagramDmPostDto: {
+      /** @description cms 목록용 이름 (DM에 안 나감) */
+      title: string;
+      /** @description 인스타 게시물 주소 (앱의 '링크 복사' 값 그대로) */
+      postUrl: string;
+      /** @description 이 단어가 들어간 댓글에만 반응. 비우면 모든 댓글 */
+      keyword?: string | null;
+      /** @description 팔로우 확인 뒤 보내는 DM 문구 */
+      message: string;
+      /** @description DM 버튼으로 열 링크 */
+      linkUrl: string;
+      /** @description 링크 버튼 글자. 비우면 '링크 열기' */
+      buttonLabel?: string | null;
+      /**
+       * @description 끄면 DM을 보내지 않는다
+       * @default true
+       */
+      isActive: boolean;
+    };
+    AdminUpdateInstagramDmPostDto: {
+      /** @description cms 목록용 이름 (DM에 안 나감) */
+      title?: string;
+      /** @description 인스타 게시물 주소 (앱의 '링크 복사' 값 그대로) */
+      postUrl?: string;
+      /** @description 이 단어가 들어간 댓글에만 반응. 비우면 모든 댓글 */
+      keyword?: string | null;
+      /** @description 팔로우 확인 뒤 보내는 DM 문구 */
+      message?: string;
+      /** @description DM 버튼으로 열 링크 */
+      linkUrl?: string;
+      /** @description 링크 버튼 글자. 비우면 '링크 열기' */
+      buttonLabel?: string | null;
+      /**
+       * @description 끄면 DM을 보내지 않는다
+       * @default true
+       */
+      isActive: boolean;
     };
     PingResponseDto: {
       /**
@@ -6971,7 +7095,10 @@ export interface operations {
           | 'RESEED_DEMO_POSTINGS'
           | 'BLOCK_EXTRACTION_DOMAIN'
           | 'UNBLOCK_EXTRACTION_DOMAIN'
-          | 'REFRESH_EXTRACTION';
+          | 'REFRESH_EXTRACTION'
+          | 'CREATE_INSTAGRAM_DM_POST'
+          | 'UPDATE_INSTAGRAM_DM_POST'
+          | 'DELETE_INSTAGRAM_DM_POST';
         targetType?:
           | 'USER'
           | 'INQUIRY'
@@ -6982,7 +7109,8 @@ export interface operations {
           | 'AUTH'
           | 'NOTICE'
           | 'APP_SETTING'
-          | 'EXTRACTION';
+          | 'EXTRACTION'
+          | 'INSTAGRAM_DM_POST';
         /** @description 조회 시작일 (KST, YYYY-MM-DD, 포함) */
         createdFrom?: string;
         /** @description 조회 종료일 (KST, YYYY-MM-DD, 포함) */
@@ -8169,6 +8297,232 @@ export interface operations {
       };
     };
   };
+  AdminInstagramDmController_list: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminInstagramDmPostListResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramDmController_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminCreateInstagramDmPostDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminInstagramDmPostResponseDto'];
+        };
+      };
+      /** @description INVALID_INSTAGRAM_POST_URL 등 입력 오류 */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description INSTAGRAM_DM_POST_EXISTS */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramDmController_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminInstagramDmPostResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description INSTAGRAM_DM_POST_NOT_FOUND */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramDmController_remove: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description INSTAGRAM_DM_POST_NOT_FOUND */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramDmController_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminUpdateInstagramDmPostDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminInstagramDmPostResponseDto'];
+        };
+      };
+      /** @description INVALID_INSTAGRAM_POST_URL 등 입력 오류 */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description INSTAGRAM_DM_POST_NOT_FOUND */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description INSTAGRAM_DM_POST_EXISTS */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   HealthController_ping: {
     parameters: {
       query?: never;
@@ -8202,6 +8556,64 @@ export interface operations {
         content: {
           'application/json': components['schemas']['PingResponseDto'];
         };
+      };
+    };
+  };
+  InstagramWebhookController_verify: {
+    parameters: {
+      query: {
+        'hub.mode': string;
+        'hub.verify_token': string;
+        'hub.challenge': string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description hub.challenge 값 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': string;
+        };
+      };
+      /** @description 확인 토큰 불일치 · 미설정 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  InstagramWebhookController_receive: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description EVENT_RECEIVED */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': string;
+        };
+      };
+      /** @description X-Hub-Signature-256 불일치 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };
