@@ -47,3 +47,24 @@ export async function deleteInstagramDmPostAction(id: number): Promise<ActionRes
   revalidatePath('/instagram-dm');
   redirect('/instagram-dm');
 }
+
+/** 다시 연결한 토큰으로 바꾼다 (최고관리자) */
+export async function replaceInstagramTokenAction(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    await adminApi('/admin/instagram-dm/token', {
+      method: 'PUT',
+      body: { accessToken: String(formData.get('accessToken') ?? '').trim() },
+    });
+  } catch (error) {
+    return toActionError(error);
+  }
+  revalidatePath('/instagram-dm');
+  return {
+    ok: true,
+    data: undefined,
+    message: '토큰을 바꿨어요. 만료일은 다음 자동 갱신 때 보여요.',
+  };
+}

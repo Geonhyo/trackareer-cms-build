@@ -1680,7 +1680,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** 인스타 DM 게시물 목록 (최근 등록순) + 서버 설정 여부 */
+    /** 인스타 DM 게시물 목록 (최근 등록순) + 계정 연결 · 토큰 상태 */
     get: operations['AdminInstagramDmController_list'];
     put?: never;
     /** 인스타 DM 게시물 등록 */
@@ -1708,6 +1708,23 @@ export interface paths {
     head?: never;
     /** 인스타 DM 게시물 수정 (끄려면 isActive=false) */
     patch: operations['AdminInstagramDmController_update'];
+    trace?: never;
+  };
+  '/admin/instagram-dm/token': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /** 인스타 토큰 교체 (다시 연결할 때, SUPER). 이 계정의 토큰인지 확인하고 저장한다 */
+    put: operations['AdminInstagramDmController_replaceToken'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
     trace?: never;
   };
   '/ping': {
@@ -3223,7 +3240,8 @@ export interface components {
         | 'REFRESH_EXTRACTION'
         | 'CREATE_INSTAGRAM_DM_POST'
         | 'UPDATE_INSTAGRAM_DM_POST'
-        | 'DELETE_INSTAGRAM_DM_POST';
+        | 'DELETE_INSTAGRAM_DM_POST'
+        | 'UPDATE_INSTAGRAM_TOKEN';
       /** @enum {string} */
       targetType:
         | 'USER'
@@ -3236,7 +3254,8 @@ export interface components {
         | 'NOTICE'
         | 'APP_SETTING'
         | 'EXTRACTION'
-        | 'INSTAGRAM_DM_POST';
+        | 'INSTAGRAM_DM_POST'
+        | 'INSTAGRAM_ACCOUNT';
       /** @description 대상 식별자 raw (이름 해석 안 함) */
       targetId: string | null;
       /** @description 비고 (role 변경·email 등; 시크릿 미포함) */
@@ -3718,7 +3737,7 @@ export interface components {
       /** @enum {string} */
       level: 'critical' | 'warning';
       /** @enum {string} */
-      source: 'SERVER' | 'BATCH' | 'EXTRACTION';
+      source: 'SERVER' | 'BATCH' | 'EXTRACTION' | 'INSTAGRAM';
       title: string;
       detail: string;
       /**
@@ -3860,15 +3879,37 @@ export interface components {
       firstDmCount: number;
       /** @description 팔로우 확인 뒤 링크를 보낸 수 */
       linkSentCount: number;
+      /** @description 끝내 첫 DM을 못 보낸 수 (7일 지남 · 다시 보내도 안 되는 오류) */
+      missedDmCount: number;
+      /** @description 한도 · 일시 오류로 다시 보내려고 기다리는 첫 DM 수 */
+      pendingDmCount: number;
       /** Format: date-time */
       createdAt: string;
       /** Format: date-time */
       updatedAt: string;
     };
+    AdminInstagramAccountDto: {
+      /** @description 계정 ID · 앱 시크릿 · 토큰이 모두 있는지 (아니면 DM이 나가지 않음) */
+      configured: boolean;
+      /**
+       * @description DB: 갱신 · 교체한 토큰, ENV: 환경변수 토큰(첫 갱신 전), NONE: 없음
+       * @enum {string}
+       */
+      tokenSource: 'DB' | 'ENV' | 'NONE';
+      /**
+       * Format: date-time
+       * @description 토큰 만료 (갱신 전이면 모름)
+       */
+      tokenExpiresAt: string | null;
+      /**
+       * Format: date-time
+       * @description 마지막 자동 갱신
+       */
+      tokenRefreshedAt: string | null;
+    };
     AdminInstagramDmPostListResponseDto: {
       items: components['schemas']['AdminInstagramDmPostDto'][];
-      /** @description 서버에 인스타 계정 ID · 토큰 · 앱 시크릿이 모두 설정됐는지 (아니면 DM이 나가지 않음) */
-      configured: boolean;
+      account: components['schemas']['AdminInstagramAccountDto'];
     };
     AdminInstagramDmPostResponseDto: {
       item: components['schemas']['AdminInstagramDmPostDto'];
@@ -3910,6 +3951,10 @@ export interface components {
        * @default true
        */
       isActive: boolean;
+    };
+    AdminUpdateInstagramTokenDto: {
+      /** @description Meta 앱에서 새로 만든 장기 액세스 토큰 (다시 연결할 때) */
+      accessToken: string;
     };
     PingResponseDto: {
       /**
@@ -7098,7 +7143,8 @@ export interface operations {
           | 'REFRESH_EXTRACTION'
           | 'CREATE_INSTAGRAM_DM_POST'
           | 'UPDATE_INSTAGRAM_DM_POST'
-          | 'DELETE_INSTAGRAM_DM_POST';
+          | 'DELETE_INSTAGRAM_DM_POST'
+          | 'UPDATE_INSTAGRAM_TOKEN';
         targetType?:
           | 'USER'
           | 'INQUIRY'
@@ -7110,7 +7156,8 @@ export interface operations {
           | 'NOTICE'
           | 'APP_SETTING'
           | 'EXTRACTION'
-          | 'INSTAGRAM_DM_POST';
+          | 'INSTAGRAM_DM_POST'
+          | 'INSTAGRAM_ACCOUNT';
         /** @description 조회 시작일 (KST, YYYY-MM-DD, 포함) */
         createdFrom?: string;
         /** @description 조회 종료일 (KST, YYYY-MM-DD, 포함) */
@@ -8516,6 +8563,50 @@ export interface operations {
       };
       /** @description INSTAGRAM_DM_POST_EXISTS */
       409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramDmController_replaceToken: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminUpdateInstagramTokenDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminInstagramAccountDto'];
+        };
+      };
+      /** @description INVALID_INSTAGRAM_TOKEN */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
         headers: {
           [name: string]: unknown;
         };

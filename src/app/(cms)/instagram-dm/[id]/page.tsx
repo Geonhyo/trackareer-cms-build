@@ -31,7 +31,7 @@ export default async function InstagramDmPostPage({ params }: { params: Promise<
             {post.isActive ? <Badge tone="positive">켜짐</Badge> : <Badge>꺼짐</Badge>}
           </Row>
         }
-        description={`첫 DM ${formatNumber(post.firstDmCount)}명 · 링크 발송 ${formatNumber(post.linkSentCount)}명 · 등록 ${formatDateTime(post.createdAt)}`}
+        description={`첫 DM ${formatNumber(post.firstDmCount)}명 · 링크 발송 ${formatNumber(post.linkSentCount)}명 · 재시도 대기 ${formatNumber(post.pendingDmCount)} · 놓침 ${formatNumber(post.missedDmCount)} · 등록 ${formatDateTime(post.createdAt)}`}
         action={
           <Row>
             <LinkButton href={post.postUrl} target="_blank" rel="noreferrer">
