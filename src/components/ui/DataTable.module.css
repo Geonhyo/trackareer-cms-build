@@ -1,0 +1,52 @@
+.wrap {
+  overflow-x: auto;
+  border: 1px solid var(--stroke-muted);
+  border-radius: var(--r3);
+  background: var(--bg-default);
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t3);
+}
+.table th {
+  text-align: left;
+  font-weight: var(--medium);
+  color: var(--fg-subtle);
+  background: var(--gray50);
+  padding: var(--x2_5) var(--x3);
+  border-bottom: 1px solid var(--stroke-muted);
+  white-space: nowrap;
+}
+.table td {
+  padding: var(--x2_5) var(--x3);
+  border-bottom: 1px solid var(--stroke-muted);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+/* 긴 글(제목 · 공고명)만 줄바꿈 */
+.table td[data-wrap='true'] {
+  white-space: normal;
+  min-width: 200px;
+}
+.table tr:last-child td {
+  border-bottom: 0;
+}
+.table [data-align='right'] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.table [data-align='center'] {
+  text-align: center;
+}
+.clickable {
+  cursor: pointer;
+}
+.clickable:hover td {
+  background: var(--gray50);
+}
+.empty {
+  text-align: center;
+  color: var(--fg-subtle);
+  padding: var(--x10) var(--x3) !important;
+}
