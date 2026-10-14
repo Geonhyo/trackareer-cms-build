@@ -31,6 +31,16 @@ const columns: ColumnDef<Post, unknown>[] = [
     cell: ({ row }) => formatNumber(row.original.linkSentCount),
     size: 90,
   },
+  {
+    header: '재시도 대기',
+    cell: ({ row }) => formatNumber(row.original.pendingDmCount),
+    size: 100,
+  },
+  {
+    header: '놓침',
+    cell: ({ row }) => formatNumber(row.original.missedDmCount),
+    size: 80,
+  },
   { header: '등록', cell: ({ row }) => formatDate(row.original.createdAt), size: 120 },
 ];
 
