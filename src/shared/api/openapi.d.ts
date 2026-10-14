@@ -1718,7 +1718,7 @@ export interface paths {
       cookie?: never;
     };
     get?: never;
-    /** 인스타 토큰 교체 (다시 연결할 때, SUPER). 이 계정의 토큰인지 확인하고 저장한다 */
+    /** 인스타 토큰 넣기 · 교체 (처음 · 다시 연결할 때, SUPER). 이 계정의 토큰인지 확인하고 저장한다 */
     put: operations['AdminInstagramDmController_replaceToken'];
     post?: never;
     delete?: never;
@@ -3889,13 +3889,10 @@ export interface components {
       updatedAt: string;
     };
     AdminInstagramAccountDto: {
-      /** @description 계정 ID · 앱 시크릿 · 토큰이 모두 있는지 (아니면 DM이 나가지 않음) */
+      /** @description 계정 ID · 앱 시크릿(환경변수) · 토큰(cms)이 모두 있는지 (아니면 DM이 나가지 않음) */
       configured: boolean;
-      /**
-       * @description DB: 갱신 · 교체한 토큰, ENV: 환경변수 토큰(첫 갱신 전), NONE: 없음
-       * @enum {string}
-       */
-      tokenSource: 'DB' | 'ENV' | 'NONE';
+      /** @description cms에서 토큰을 넣었는지 */
+      hasToken: boolean;
       /**
        * Format: date-time
        * @description 토큰 만료 (갱신 전이면 모름)
@@ -3955,7 +3952,7 @@ export interface components {
       isActive: boolean;
     };
     AdminUpdateInstagramTokenDto: {
-      /** @description Meta 앱에서 새로 만든 장기 액세스 토큰 (다시 연결할 때) */
+      /** @description Meta 앱에서 만든 장기 액세스 토큰 (처음 넣을 때 · 다시 연결할 때) */
       accessToken: string;
     };
     PingResponseDto: {

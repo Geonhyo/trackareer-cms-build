@@ -48,7 +48,7 @@ export async function deleteInstagramDmPostAction(id: number): Promise<ActionRes
   redirect('/instagram-dm');
 }
 
-/** 다시 연결한 토큰으로 바꾼다 (최고관리자) */
+/** 토큰을 넣는다 · 바꾼다 (최고관리자) */
 export async function replaceInstagramTokenAction(
   _prev: ActionResult | null,
   formData: FormData,
@@ -65,6 +65,6 @@ export async function replaceInstagramTokenAction(
   return {
     ok: true,
     data: undefined,
-    message: '토큰을 바꿨어요. 만료일은 다음 자동 갱신 때 보여요.',
+    message: '토큰을 저장했어요. 만료일은 다음 자동 갱신 때 보여요.',
   };
 }
