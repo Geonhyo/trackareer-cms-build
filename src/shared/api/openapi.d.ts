@@ -1727,6 +1727,78 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/admin/instagram-dm/reply-texts': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 댓글 답글 문구 목록 (켜 둔 것 중 무작위로 단다) */
+    get: operations['AdminInstagramDmContentController_listReplyTexts'];
+    put?: never;
+    /** 댓글 답글 문구 추가 */
+    post: operations['AdminInstagramDmContentController_createReplyText'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/instagram-dm/reply-texts/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** 댓글 답글 문구 삭제 */
+    delete: operations['AdminInstagramDmContentController_removeReplyText'];
+    options?: never;
+    head?: never;
+    /** 댓글 답글 문구 수정 (끄려면 isActive=false) */
+    patch: operations['AdminInstagramDmContentController_updateReplyText'];
+    trace?: never;
+  };
+  '/admin/instagram-dm/templates': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** DM 템플릿 목록 (게시물 등록 때 불러온다) */
+    get: operations['AdminInstagramDmContentController_listTemplates'];
+    put?: never;
+    /** DM 템플릿 추가 */
+    post: operations['AdminInstagramDmContentController_createTemplate'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/instagram-dm/templates/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** DM 템플릿 삭제 */
+    delete: operations['AdminInstagramDmContentController_removeTemplate'];
+    options?: never;
+    head?: never;
+    /** DM 템플릿 수정 (이미 등록한 게시물은 바뀌지 않는다) */
+    patch: operations['AdminInstagramDmContentController_updateTemplate'];
+    trace?: never;
+  };
   '/ping': {
     parameters: {
       query?: never;
@@ -3241,7 +3313,13 @@ export interface components {
         | 'CREATE_INSTAGRAM_DM_POST'
         | 'UPDATE_INSTAGRAM_DM_POST'
         | 'DELETE_INSTAGRAM_DM_POST'
-        | 'UPDATE_INSTAGRAM_TOKEN';
+        | 'UPDATE_INSTAGRAM_TOKEN'
+        | 'CREATE_INSTAGRAM_REPLY_TEXT'
+        | 'UPDATE_INSTAGRAM_REPLY_TEXT'
+        | 'DELETE_INSTAGRAM_REPLY_TEXT'
+        | 'CREATE_INSTAGRAM_DM_TEMPLATE'
+        | 'UPDATE_INSTAGRAM_DM_TEMPLATE'
+        | 'DELETE_INSTAGRAM_DM_TEMPLATE';
       /** @enum {string} */
       targetType:
         | 'USER'
@@ -3255,7 +3333,9 @@ export interface components {
         | 'APP_SETTING'
         | 'EXTRACTION'
         | 'INSTAGRAM_DM_POST'
-        | 'INSTAGRAM_ACCOUNT';
+        | 'INSTAGRAM_ACCOUNT'
+        | 'INSTAGRAM_REPLY_TEXT'
+        | 'INSTAGRAM_DM_TEMPLATE';
       /** @description 대상 식별자 raw (이름 해석 안 함) */
       targetId: string | null;
       /** @description 비고 (role 변경·email 등; 시크릿 미포함) */
@@ -3954,6 +4034,76 @@ export interface components {
     AdminUpdateInstagramTokenDto: {
       /** @description Meta 앱에서 만든 장기 액세스 토큰 (처음 넣을 때 · 다시 연결할 때) */
       accessToken: string;
+    };
+    AdminInstagramReplyTextDto: {
+      id: number;
+      text: string;
+      isActive: boolean;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    AdminInstagramReplyTextListResponseDto: {
+      items: components['schemas']['AdminInstagramReplyTextDto'][];
+    };
+    AdminCreateInstagramReplyTextDto: {
+      /** @description 첫 DM 뒤 댓글에 다는 공개 답글 */
+      text: string;
+      /**
+       * @description 끄면 고르지 않는다
+       * @default true
+       */
+      isActive: boolean;
+    };
+    AdminInstagramReplyTextResponseDto: {
+      item: components['schemas']['AdminInstagramReplyTextDto'];
+    };
+    AdminUpdateInstagramReplyTextDto: {
+      /** @description 첫 DM 뒤 댓글에 다는 공개 답글 */
+      text?: string;
+      /**
+       * @description 끄면 고르지 않는다
+       * @default true
+       */
+      isActive: boolean;
+    };
+    AdminInstagramDmTemplateDto: {
+      id: number;
+      name: string;
+      message: string;
+      linkUrl: string | null;
+      buttonLabel: string | null;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    AdminInstagramDmTemplateListResponseDto: {
+      items: components['schemas']['AdminInstagramDmTemplateDto'][];
+    };
+    AdminCreateInstagramDmTemplateDto: {
+      /** @description 팔로우 확인 뒤 보내는 DM 문구 */
+      message: string;
+      /** @description 링크 버튼 글자. 비우면 '링크 열기' */
+      buttonLabel?: string | null;
+      /** @description cms에서 고르기 위한 이름 */
+      name: string;
+      /** @description 비우면 게시물마다 넣는다 */
+      linkUrl?: string | null;
+    };
+    AdminInstagramDmTemplateResponseDto: {
+      item: components['schemas']['AdminInstagramDmTemplateDto'];
+    };
+    AdminUpdateInstagramDmTemplateDto: {
+      /** @description 팔로우 확인 뒤 보내는 DM 문구 */
+      message?: string;
+      /** @description 링크 버튼 글자. 비우면 '링크 열기' */
+      buttonLabel?: string | null;
+      /** @description cms에서 고르기 위한 이름 */
+      name?: string;
+      /** @description 비우면 게시물마다 넣는다 */
+      linkUrl?: string | null;
     };
     PingResponseDto: {
       /**
@@ -7143,7 +7293,13 @@ export interface operations {
           | 'CREATE_INSTAGRAM_DM_POST'
           | 'UPDATE_INSTAGRAM_DM_POST'
           | 'DELETE_INSTAGRAM_DM_POST'
-          | 'UPDATE_INSTAGRAM_TOKEN';
+          | 'UPDATE_INSTAGRAM_TOKEN'
+          | 'CREATE_INSTAGRAM_REPLY_TEXT'
+          | 'UPDATE_INSTAGRAM_REPLY_TEXT'
+          | 'DELETE_INSTAGRAM_REPLY_TEXT'
+          | 'CREATE_INSTAGRAM_DM_TEMPLATE'
+          | 'UPDATE_INSTAGRAM_DM_TEMPLATE'
+          | 'DELETE_INSTAGRAM_DM_TEMPLATE';
         targetType?:
           | 'USER'
           | 'INQUIRY'
@@ -7156,7 +7312,9 @@ export interface operations {
           | 'APP_SETTING'
           | 'EXTRACTION'
           | 'INSTAGRAM_DM_POST'
-          | 'INSTAGRAM_ACCOUNT';
+          | 'INSTAGRAM_ACCOUNT'
+          | 'INSTAGRAM_REPLY_TEXT'
+          | 'INSTAGRAM_DM_TEMPLATE';
         /** @description 조회 시작일 (KST, YYYY-MM-DD, 포함) */
         createdFrom?: string;
         /** @description 조회 종료일 (KST, YYYY-MM-DD, 포함) */
@@ -8606,6 +8764,332 @@ export interface operations {
       };
       /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
       403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramDmContentController_listReplyTexts: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminInstagramReplyTextListResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramDmContentController_createReplyText: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminCreateInstagramReplyTextDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminInstagramReplyTextResponseDto'];
+        };
+      };
+      /** @description 입력 오류 */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramDmContentController_removeReplyText: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description INSTAGRAM_REPLY_TEXT_NOT_FOUND */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramDmContentController_updateReplyText: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminUpdateInstagramReplyTextDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminInstagramReplyTextResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description INSTAGRAM_REPLY_TEXT_NOT_FOUND */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramDmContentController_listTemplates: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminInstagramDmTemplateListResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramDmContentController_createTemplate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminCreateInstagramDmTemplateDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminInstagramDmTemplateResponseDto'];
+        };
+      };
+      /** @description 입력 오류 */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramDmContentController_removeTemplate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description INSTAGRAM_DM_TEMPLATE_NOT_FOUND */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramDmContentController_updateTemplate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminUpdateInstagramDmTemplateDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminInstagramDmTemplateResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description INSTAGRAM_DM_TEMPLATE_NOT_FOUND */
+      404: {
         headers: {
           [name: string]: unknown;
         };
