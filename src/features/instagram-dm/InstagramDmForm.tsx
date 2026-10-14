@@ -1,18 +1,49 @@
 'use client';
 
-import { useActionState } from 'react';
-import { Card, Checkbox, Field, Grid, Input, Notice, Row, Stack, Textarea } from '@/components/ui';
+import { useActionState, useState } from 'react';
+import {
+  Card,
+  Checkbox,
+  Field,
+  Grid,
+  Input,
+  Notice,
+  Row,
+  Select,
+  Stack,
+  Textarea,
+} from '@/components/ui';
 import { SubmitButton } from '@/components/ui/SubmitButton';
 import type { Schemas } from '@/shared/api/types';
 import { saveInstagramDmPostAction } from './actions';
 
 type Post = Schemas['AdminInstagramDmPostDto'];
+type Template = Schemas['AdminInstagramDmTemplateDto'];
+type DmFields = { message: string; linkUrl: string; buttonLabel: string };
 
-export function InstagramDmForm({ post }: { post?: Post }) {
+export function InstagramDmForm({ post, templates }: { post?: Post; templates: Template[] }) {
   const [state, action] = useActionState(
     saveInstagramDmPostAction.bind(null, post?.id ?? null),
     null,
   );
+  // 템플릿을 고르면 DM 칸을 그 값으로 다시 그린다 (값을 복사할 뿐, 게시물은 템플릿을 참조하지 않는다)
+  const [dm, setDm] = useState<DmFields & { version: number }>({
+    message: post?.message ?? '',
+    linkUrl: post?.linkUrl ?? '',
+    buttonLabel: post?.buttonLabel ?? '',
+    version: 0,
+  });
+  const applyTemplate = (id: string) => {
+    const template = templates.find((item) => String(item.id) === id);
+    if (!template) return;
+    setDm((prev) => ({
+      message: template.message,
+      // 템플릿에 링크가 없으면 지금 칸을 그대로 둔다
+      linkUrl: template.linkUrl ?? prev.linkUrl,
+      buttonLabel: template.buttonLabel ?? '',
+      version: prev.version + 1,
+    }));
+  };
   return (
     <form action={action}>
       <Stack>
@@ -61,17 +92,34 @@ export function InstagramDmForm({ post }: { post?: Post }) {
               팔로우를 확인하고, 팔로워에게만 아래 문구와 링크 버튼을 보내요. 팔로우하지 않았으면
               팔로우를 부탁하는 공통 DM이 가요.
             </Notice>
-            <Field label="문구" hint="640자까지">
+            {templates.length > 0 && (
+              <Field
+                label="템플릿 불러오기"
+                hint="고르면 아래 문구 · 링크 · 버튼 글자를 채워요. 채운 뒤 고쳐도 템플릿은 그대로예요."
+              >
+                <Select defaultValue="" onChange={(event) => applyTemplate(event.target.value)}>
+                  <option value="" disabled>
+                    템플릿 고르기
+                  </option>
+                  {templates.map((template) => (
+                    <option key={template.id} value={template.id}>
+                      {template.name}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            )}
+            <Field key={`message-${dm.version}`} label="문구" hint="640자까지">
               <Textarea
                 name="message"
                 rows={5}
                 maxLength={640}
                 required
                 placeholder={'팔로우 감사합니다! 💛\n요청하신 공고 모음이에요 👇'}
-                defaultValue={post?.message}
+                defaultValue={dm.message}
               />
             </Field>
-            <Grid min={240}>
+            <Grid key={`link-${dm.version}`} min={240}>
               <Field label="링크">
                 <Input
                   name="linkUrl"
@@ -79,7 +127,7 @@ export function InstagramDmForm({ post }: { post?: Post }) {
                   maxLength={1000}
                   required
                   placeholder="https://www.trackareer.com/c/..."
-                  defaultValue={post?.linkUrl}
+                  defaultValue={dm.linkUrl}
                 />
               </Field>
               <Field label="버튼 글자" hint="20자까지. 비우면 '링크 열기'">
@@ -87,7 +135,7 @@ export function InstagramDmForm({ post }: { post?: Post }) {
                   name="buttonLabel"
                   maxLength={20}
                   placeholder="링크 열기"
-                  defaultValue={post?.buttonLabel ?? ''}
+                  defaultValue={dm.buttonLabel}
                 />
               </Field>
             </Grid>

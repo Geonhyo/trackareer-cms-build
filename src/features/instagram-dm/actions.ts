@@ -68,3 +68,85 @@ export async function replaceInstagramTokenAction(
     message: '토큰을 저장했어요. 만료일은 다음 자동 갱신 때 보여요.',
   };
 }
+
+// ---- 댓글 답글 문구 ----
+
+export async function addReplyTextAction(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    await adminApi('/admin/instagram-dm/reply-texts', {
+      method: 'POST',
+      body: { text: String(formData.get('text') ?? '').trim() },
+    });
+  } catch (error) {
+    return toActionError(error);
+  }
+  revalidatePath('/instagram-dm/replies');
+  return { ok: true, data: undefined, message: '추가했어요.' };
+}
+
+export async function setReplyTextActiveAction(
+  id: number,
+  isActive: boolean,
+): Promise<ActionResult> {
+  try {
+    await adminApi(`/admin/instagram-dm/reply-texts/${id}`, {
+      method: 'PATCH',
+      body: { isActive },
+    });
+  } catch (error) {
+    return toActionError(error);
+  }
+  revalidatePath('/instagram-dm/replies');
+  return { ok: true, data: undefined };
+}
+
+export async function deleteReplyTextAction(id: number): Promise<ActionResult> {
+  try {
+    await adminApi(`/admin/instagram-dm/reply-texts/${id}`, { method: 'DELETE' });
+  } catch (error) {
+    return toActionError(error);
+  }
+  revalidatePath('/instagram-dm/replies');
+  return { ok: true, data: undefined };
+}
+
+// ---- DM 템플릿 ----
+
+/** 새 템플릿(id null) 또는 수정 */
+export async function saveTemplateAction(
+  id: number | null,
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const text = (name: string) => String(formData.get(name) ?? '').trim();
+  const body = {
+    name: text('name'),
+    message: text('message'),
+    linkUrl: text('linkUrl') || null,
+    buttonLabel: text('buttonLabel') || null,
+  };
+  try {
+    await adminApi(id ? `/admin/instagram-dm/templates/${id}` : '/admin/instagram-dm/templates', {
+      method: id ? 'PATCH' : 'POST',
+      body,
+    });
+  } catch (error) {
+    return toActionError(error);
+  }
+  revalidatePath('/instagram-dm/templates');
+  if (!id) redirect('/instagram-dm/templates');
+  return { ok: true, data: undefined, message: '저장했어요. 이미 등록한 게시물은 바뀌지 않아요.' };
+}
+
+export async function deleteTemplateAction(id: number): Promise<ActionResult> {
+  try {
+    await adminApi(`/admin/instagram-dm/templates/${id}`, { method: 'DELETE' });
+  } catch (error) {
+    return toActionError(error);
+  }
+  revalidatePath('/instagram-dm/templates');
+  redirect('/instagram-dm/templates');
+}
