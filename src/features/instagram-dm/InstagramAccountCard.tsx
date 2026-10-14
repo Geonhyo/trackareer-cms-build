@@ -14,12 +14,6 @@ function refreshResult(run: RefreshRun): { text: string; tone: Tone } {
     : { text: '건너뜀 (바꾼 지 하루 안)', tone: 'neutral' };
 }
 
-const TOKEN_SOURCE: Record<Account['tokenSource'], string> = {
-  DB: '자동 갱신 중',
-  ENV: '환경변수 (첫 자동 갱신 전)',
-  NONE: '없음',
-};
-
 /** 인스타 계정 연결 · 토큰 상태. 토큰은 매주 월요일 자동 갱신돼 60일이 계속 미뤄진다 */
 export function InstagramAccountCard({
   account,
@@ -41,12 +35,21 @@ export function InstagramAccountCard({
                 <Badge tone="critical">미설정 — DM이 나가지 않아요</Badge>
               ),
             },
-            { label: '토큰', value: TOKEN_SOURCE[account.tokenSource] },
+            {
+              label: '토큰',
+              value: account.hasToken ? (
+                '넣음 (매주 월요일 자동 갱신)'
+              ) : (
+                <Badge tone="critical">아직 없음 — 아래에서 넣어 주세요</Badge>
+              ),
+            },
             {
               label: '토큰 만료',
               value: account.tokenExpiresAt
                 ? formatDateTime(account.tokenExpiresAt)
-                : '다음 자동 갱신 때 확인',
+                : account.hasToken
+                  ? '다음 자동 갱신 때 확인'
+                  : '-',
             },
             {
               label: '마지막 자동 갱신',
