@@ -3906,6 +3906,8 @@ export interface components {
        * @description 마지막 자동 갱신
        */
       tokenRefreshedAt: string | null;
+      /** @description 최근 자동 갱신 시도 (배치 instagram-token-refresh, 최신 5건). result.refreshed 0 = 바꾼 지 24시간 안이라 건너뜀 */
+      refreshRuns: components['schemas']['AdminBatchRunItemDto'][];
     };
     AdminInstagramDmPostListResponseDto: {
       items: components['schemas']['AdminInstagramDmPostDto'][];
