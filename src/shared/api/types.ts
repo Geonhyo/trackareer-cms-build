@@ -5,3 +5,4 @@ export type Schemas = components['schemas'];
 
 export type AdminSummary = Schemas['AdminSummaryDto'];
 export type AdminLoginResponse = Schemas['AdminLoginResponseDto'];
+export type AdminRefreshResponse = Schemas['AdminRefreshResponseDto'];

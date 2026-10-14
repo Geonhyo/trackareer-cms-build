@@ -31,16 +31,26 @@ const base = (maxAge: number): CookieOptions => ({
   maxAge,
 });
 
-/** 로그인 · 갱신 응답을 쿠키 세 개로 */
+/**
+ * 로그인 · 갱신 응답을 쿠키로. refreshToken이 null이면(서버 30초 유예 — 같은 토큰으로 다른 요청이
+ * 먼저 갱신했다) 갱신 토큰 쿠키는 건드리지 않는다. 먼저 끝난 응답이 새 토큰을 넣는다
+ */
 export function sessionCookies(
-  tokens: { accessToken: string; refreshToken: string },
+  tokens: { accessToken: string; refreshToken: string | null },
   admin: SessionAdmin,
 ): Array<{ name: string; value: string; options: CookieOptions }> {
-  return [
+  const cookies = [
     { name: ACCESS_COOKIE, value: tokens.accessToken, options: base(ACCESS_MAX_AGE) },
-    { name: REFRESH_COOKIE, value: tokens.refreshToken, options: base(REFRESH_MAX_AGE) },
     { name: ADMIN_COOKIE, value: JSON.stringify(admin), options: base(REFRESH_MAX_AGE) },
   ];
+  if (tokens.refreshToken) {
+    cookies.push({
+      name: REFRESH_COOKIE,
+      value: tokens.refreshToken,
+      options: base(REFRESH_MAX_AGE),
+    });
+  }
+  return cookies;
 }
 
 export function parseAdminCookie(value: string | undefined): SessionAdmin | null {
