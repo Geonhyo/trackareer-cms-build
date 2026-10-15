@@ -1,15 +1,17 @@
 'use client';
 
-import { useActionState } from 'react';
-import { Card, Field, Grid, Input, Notice, Row, Stack, Textarea } from '@/components/ui';
+import { useActionState, useState } from 'react';
+import { Card, Field, Input, Notice, Row, Stack } from '@/components/ui';
 import { SubmitButton } from '@/components/ui/SubmitButton';
 import type { Schemas } from '@/shared/api/types';
 import { saveTemplateAction } from './actions';
+import { DmContentEditor, toEditorValue } from './DmContentEditor';
 
 type Template = Schemas['AdminInstagramDmTemplateDto'];
 
 export function TemplateForm({ template }: { template?: Template }) {
   const [state, action] = useActionState(saveTemplateAction.bind(null, template?.id ?? null), null);
+  const [dm, setDm] = useState(() => toEditorValue(template));
   return (
     <form action={action}>
       <Card title="템플릿">
@@ -23,35 +25,7 @@ export function TemplateForm({ template }: { template?: Template }) {
               defaultValue={template?.name}
             />
           </Field>
-          <Field label="DM 문구" hint="팔로우 확인 뒤 보낼 문구, 640자까지">
-            <Textarea
-              name="message"
-              rows={5}
-              maxLength={640}
-              required
-              placeholder={'팔로우 감사합니다! 💛\n요청하신 공고 모음이에요 👇'}
-              defaultValue={template?.message}
-            />
-          </Field>
-          <Grid min={240}>
-            <Field label="링크" hint="비우면 게시물마다 넣어요.">
-              <Input
-                name="linkUrl"
-                type="url"
-                maxLength={1000}
-                placeholder="https://www.trackareer.com/c/..."
-                defaultValue={template?.linkUrl ?? ''}
-              />
-            </Field>
-            <Field label="버튼 글자" hint="20자까지. 비우면 '링크 열기'">
-              <Input
-                name="buttonLabel"
-                maxLength={20}
-                placeholder="링크 열기"
-                defaultValue={template?.buttonLabel ?? ''}
-              />
-            </Field>
-          </Grid>
+          <DmContentEditor value={dm} onChange={setDm} linkRequired={false} />
           {state && !state.ok && <Notice tone="critical">{state.error}</Notice>}
           {state?.ok && state.message && <Notice tone="positive">{state.message}</Notice>}
           <Row>

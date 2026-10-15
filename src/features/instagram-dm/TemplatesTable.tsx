@@ -10,7 +10,14 @@ type Template = Schemas['AdminInstagramDmTemplateDto'];
 const columns: ColumnDef<Template, unknown>[] = [
   { header: '이름', cell: ({ row }) => row.original.name, size: 200 },
   { header: '문구', meta: { wrap: true }, cell: ({ row }) => row.original.message },
-  { header: '링크', cell: ({ row }) => row.original.linkUrl ?? '게시물마다', size: 160 },
+  {
+    header: '형식',
+    cell: ({ row }) =>
+      row.original.dmType === 'CARDS'
+        ? `카드 ${row.original.cards.length}장`
+        : `버튼 ${row.original.buttons.length}개`,
+    size: 110,
+  },
   { header: '수정', cell: ({ row }) => formatDate(row.original.updatedAt), size: 120 },
 ];
 
