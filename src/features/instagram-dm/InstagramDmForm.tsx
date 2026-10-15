@@ -1,48 +1,25 @@
 'use client';
 
 import { useActionState, useState } from 'react';
-import {
-  Card,
-  Checkbox,
-  Field,
-  Grid,
-  Input,
-  Notice,
-  Row,
-  Select,
-  Stack,
-  Textarea,
-} from '@/components/ui';
+import { Card, Checkbox, Field, Input, Notice, Row, Select, Stack } from '@/components/ui';
 import { SubmitButton } from '@/components/ui/SubmitButton';
 import type { Schemas } from '@/shared/api/types';
 import { saveInstagramDmPostAction } from './actions';
+import { DmContentEditor, toEditorValue } from './DmContentEditor';
 
 type Post = Schemas['AdminInstagramDmPostDto'];
 type Template = Schemas['AdminInstagramDmTemplateDto'];
-type DmFields = { message: string; linkUrl: string; buttonLabel: string };
 
 export function InstagramDmForm({ post, templates }: { post?: Post; templates: Template[] }) {
   const [state, action] = useActionState(
     saveInstagramDmPostAction.bind(null, post?.id ?? null),
     null,
   );
-  // 템플릿을 고르면 DM 칸을 그 값으로 다시 그린다 (값을 복사할 뿐, 게시물은 템플릿을 참조하지 않는다)
-  const [dm, setDm] = useState<DmFields & { version: number }>({
-    message: post?.message ?? '',
-    linkUrl: post?.linkUrl ?? '',
-    buttonLabel: post?.buttonLabel ?? '',
-    version: 0,
-  });
+  const [dm, setDm] = useState(() => toEditorValue(post));
+  // 템플릿을 고르면 DM을 그 값으로 바꾼다 (값을 복사할 뿐, 게시물은 템플릿을 참조하지 않는다)
   const applyTemplate = (id: string) => {
     const template = templates.find((item) => String(item.id) === id);
-    if (!template) return;
-    setDm((prev) => ({
-      message: template.message,
-      // 템플릿에 링크가 없으면 지금 칸을 그대로 둔다
-      linkUrl: template.linkUrl ?? prev.linkUrl,
-      buttonLabel: template.buttonLabel ?? '',
-      version: prev.version + 1,
-    }));
+    if (template) setDm(toEditorValue(template));
   };
   return (
     <form action={action}>
@@ -89,13 +66,13 @@ export function InstagramDmForm({ post, templates }: { post?: Post; templates: T
           <Stack>
             <Notice>
               댓글을 단 사람에게는 먼저 공통 DM(&quot;링크 받기&quot; 버튼)이 가요. 버튼을 누르면
-              팔로우를 확인하고, 팔로워에게만 아래 문구와 링크 버튼을 보내요. 팔로우하지 않았으면
-              팔로우를 부탁하는 공통 DM이 가요.
+              팔로우를 확인하고, 팔로워에게만 아래 DM을 보내요. 팔로우하지 않았으면 팔로우를
+              부탁하는 공통 DM이 가요.
             </Notice>
             {templates.length > 0 && (
               <Field
                 label="템플릿 불러오기"
-                hint="고르면 아래 문구 · 링크 · 버튼 글자를 채워요. 채운 뒤 고쳐도 템플릿은 그대로예요."
+                hint="고르면 아래 DM을 템플릿 내용으로 바꿔요. 바꾼 뒤 고쳐도 템플릿은 그대로예요."
               >
                 <Select defaultValue="" onChange={(event) => applyTemplate(event.target.value)}>
                   <option value="" disabled>
@@ -109,36 +86,7 @@ export function InstagramDmForm({ post, templates }: { post?: Post; templates: T
                 </Select>
               </Field>
             )}
-            <Field key={`message-${dm.version}`} label="문구" hint="640자까지">
-              <Textarea
-                name="message"
-                rows={5}
-                maxLength={640}
-                required
-                placeholder={'팔로우 감사합니다! 💛\n요청하신 공고 모음이에요 👇'}
-                defaultValue={dm.message}
-              />
-            </Field>
-            <Grid key={`link-${dm.version}`} min={240}>
-              <Field label="링크">
-                <Input
-                  name="linkUrl"
-                  type="url"
-                  maxLength={1000}
-                  required
-                  placeholder="https://www.trackareer.com/c/..."
-                  defaultValue={dm.linkUrl}
-                />
-              </Field>
-              <Field label="버튼 글자" hint="20자까지. 비우면 '링크 열기'">
-                <Input
-                  name="buttonLabel"
-                  maxLength={20}
-                  placeholder="링크 열기"
-                  defaultValue={dm.buttonLabel}
-                />
-              </Field>
-            </Grid>
+            <DmContentEditor value={dm} onChange={setDm} linkRequired />
             <Checkbox
               name="isActive"
               label="DM 보내기 켜기"

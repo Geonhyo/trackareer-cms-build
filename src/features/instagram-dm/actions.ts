@@ -5,6 +5,19 @@ import { redirect } from 'next/navigation';
 import { adminApi } from '@/shared/api/admin-api';
 import { toActionError, type ActionResult } from '@/shared/api/errors';
 import type { Schemas } from '@/shared/api/types';
+import type { DmContent } from './DmContentEditor';
+
+/** 폼의 DM 편집기(hidden `dm`) 값. 고른 형식 쪽만 보내고 다른 쪽은 비운다 */
+function dmFields(formData: FormData): DmContent {
+  const dm = JSON.parse(String(formData.get('dm') ?? '{}')) as DmContent;
+  const isCards = dm.dmType === 'CARDS';
+  return {
+    dmType: dm.dmType,
+    message: dm.message.trim(),
+    buttons: isCards ? [] : dm.buttons,
+    cards: isCards ? dm.cards : [],
+  };
+}
 
 /** 새 게시물(id null) 또는 수정 */
 export async function saveInstagramDmPostAction(
@@ -17,9 +30,7 @@ export async function saveInstagramDmPostAction(
     title: text('title'),
     postUrl: text('postUrl'),
     keyword: text('keyword') || null,
-    message: text('message'),
-    linkUrl: text('linkUrl'),
-    buttonLabel: text('buttonLabel') || null,
+    ...dmFields(formData),
     isActive: formData.get('isActive') === 'on',
   };
   let saved: Schemas['AdminInstagramDmPostDto'];
@@ -124,9 +135,7 @@ export async function saveTemplateAction(
   const text = (name: string) => String(formData.get(name) ?? '').trim();
   const body = {
     name: text('name'),
-    message: text('message'),
-    linkUrl: text('linkUrl') || null,
-    buttonLabel: text('buttonLabel') || null,
+    ...dmFields(formData),
   };
   try {
     await adminApi(id ? `/admin/instagram-dm/templates/${id}` : '/admin/instagram-dm/templates', {

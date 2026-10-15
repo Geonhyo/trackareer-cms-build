@@ -3945,15 +3945,29 @@ export interface components {
     AdminExtractionResultResponseDto: {
       item: components['schemas']['AdminExtractionResultDto'];
     };
+    AdminDmLinkDto: {
+      label: string;
+      /** @description http(s) 링크. 템플릿은 비워 둘 수 있다(게시물은 서비스가 막는다) */
+      url: string;
+    };
+    AdminDmCardDto: {
+      title: string;
+      subtitle?: string | null;
+      /** @description 카드 이미지 주소 (http(s)) */
+      imageUrl?: string | null;
+      buttons: components['schemas']['AdminDmLinkDto'][];
+    };
     AdminInstagramDmPostDto: {
+      /** @enum {string} */
+      dmType: 'BUTTONS' | 'CARDS';
+      message: string;
+      buttons: components['schemas']['AdminDmLinkDto'][];
+      cards: components['schemas']['AdminDmCardDto'][];
       id: number;
       title: string;
       postUrl: string;
       shortcode: string;
       keyword: string | null;
-      message: string;
-      linkUrl: string;
-      buttonLabel: string | null;
       isActive: boolean;
       /** @description 첫 DM을 보낸 수 */
       firstDmCount: number;
@@ -3994,18 +4008,22 @@ export interface components {
       item: components['schemas']['AdminInstagramDmPostDto'];
     };
     AdminCreateInstagramDmPostDto: {
+      /**
+       * @description BUTTONS: 문구 + 링크 버튼 1~3개, CARDS: 문구 메시지 뒤 카드 1~10장
+       * @default BUTTONS
+       * @enum {string}
+       */
+      dmType: 'BUTTONS' | 'CARDS';
+      /** @description 버튼형은 말풍선 본문, 카드형은 카드 앞에 보내는 메시지 */
+      message: string;
+      buttons?: components['schemas']['AdminDmLinkDto'][];
+      cards?: components['schemas']['AdminDmCardDto'][];
       /** @description cms 목록용 이름 (DM에 안 나감) */
       title: string;
       /** @description 인스타 게시물 주소 (앱의 '링크 복사' 값 그대로) */
       postUrl: string;
       /** @description 이 단어가 들어간 댓글에만 반응. 비우면 모든 댓글 */
       keyword?: string | null;
-      /** @description 팔로우 확인 뒤 보내는 DM 문구 */
-      message: string;
-      /** @description DM 버튼으로 열 링크 */
-      linkUrl: string;
-      /** @description 링크 버튼 글자. 비우면 '링크 열기' */
-      buttonLabel?: string | null;
       /**
        * @description 끄면 DM을 보내지 않는다
        * @default true
@@ -4013,18 +4031,22 @@ export interface components {
       isActive: boolean;
     };
     AdminUpdateInstagramDmPostDto: {
+      /**
+       * @description BUTTONS: 문구 + 링크 버튼 1~3개, CARDS: 문구 메시지 뒤 카드 1~10장
+       * @default BUTTONS
+       * @enum {string}
+       */
+      dmType: 'BUTTONS' | 'CARDS';
+      /** @description 버튼형은 말풍선 본문, 카드형은 카드 앞에 보내는 메시지 */
+      message?: string;
+      buttons?: components['schemas']['AdminDmLinkDto'][];
+      cards?: components['schemas']['AdminDmCardDto'][];
       /** @description cms 목록용 이름 (DM에 안 나감) */
       title?: string;
       /** @description 인스타 게시물 주소 (앱의 '링크 복사' 값 그대로) */
       postUrl?: string;
       /** @description 이 단어가 들어간 댓글에만 반응. 비우면 모든 댓글 */
       keyword?: string | null;
-      /** @description 팔로우 확인 뒤 보내는 DM 문구 */
-      message?: string;
-      /** @description DM 버튼으로 열 링크 */
-      linkUrl?: string;
-      /** @description 링크 버튼 글자. 비우면 '링크 열기' */
-      buttonLabel?: string | null;
       /**
        * @description 끄면 DM을 보내지 않는다
        * @default true
@@ -4069,11 +4091,13 @@ export interface components {
       isActive: boolean;
     };
     AdminInstagramDmTemplateDto: {
+      /** @enum {string} */
+      dmType: 'BUTTONS' | 'CARDS';
+      message: string;
+      buttons: components['schemas']['AdminDmLinkDto'][];
+      cards: components['schemas']['AdminDmCardDto'][];
       id: number;
       name: string;
-      message: string;
-      linkUrl: string | null;
-      buttonLabel: string | null;
       /** Format: date-time */
       createdAt: string;
       /** Format: date-time */
@@ -4083,27 +4107,35 @@ export interface components {
       items: components['schemas']['AdminInstagramDmTemplateDto'][];
     };
     AdminCreateInstagramDmTemplateDto: {
-      /** @description 팔로우 확인 뒤 보내는 DM 문구 */
+      /**
+       * @description BUTTONS: 문구 + 링크 버튼 1~3개, CARDS: 문구 메시지 뒤 카드 1~10장
+       * @default BUTTONS
+       * @enum {string}
+       */
+      dmType: 'BUTTONS' | 'CARDS';
+      /** @description 버튼형은 말풍선 본문, 카드형은 카드 앞에 보내는 메시지 */
       message: string;
-      /** @description 링크 버튼 글자. 비우면 '링크 열기' */
-      buttonLabel?: string | null;
+      buttons?: components['schemas']['AdminDmLinkDto'][];
+      cards?: components['schemas']['AdminDmCardDto'][];
       /** @description cms에서 고르기 위한 이름 */
       name: string;
-      /** @description 비우면 게시물마다 넣는다 */
-      linkUrl?: string | null;
     };
     AdminInstagramDmTemplateResponseDto: {
       item: components['schemas']['AdminInstagramDmTemplateDto'];
     };
     AdminUpdateInstagramDmTemplateDto: {
-      /** @description 팔로우 확인 뒤 보내는 DM 문구 */
+      /**
+       * @description BUTTONS: 문구 + 링크 버튼 1~3개, CARDS: 문구 메시지 뒤 카드 1~10장
+       * @default BUTTONS
+       * @enum {string}
+       */
+      dmType: 'BUTTONS' | 'CARDS';
+      /** @description 버튼형은 말풍선 본문, 카드형은 카드 앞에 보내는 메시지 */
       message?: string;
-      /** @description 링크 버튼 글자. 비우면 '링크 열기' */
-      buttonLabel?: string | null;
+      buttons?: components['schemas']['AdminDmLinkDto'][];
+      cards?: components['schemas']['AdminDmCardDto'][];
       /** @description cms에서 고르기 위한 이름 */
       name?: string;
-      /** @description 비우면 게시물마다 넣는다 */
-      linkUrl?: string | null;
     };
     PingResponseDto: {
       /**
