@@ -1799,6 +1799,92 @@ export interface paths {
     patch: operations['AdminInstagramDmContentController_updateTemplate'];
     trace?: never;
   };
+  '/admin/instagram/overview': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 인스타 성과 개요 (팔로워 추이 · 기간 게시물 수 · 합계 · 상위 게시물 5개) */
+    get: operations['AdminInstagramInsightsController_overview'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/instagram/media': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 인스타 게시물 성과 (30개씩, 최신 누적값 · 비율 · DM 집계) */
+    get: operations['AdminInstagramInsightsController_list'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/instagram/media/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 인스타 게시물 하나 (스냅샷 추이 · 기준일별 카테고리 중앙값 비교 · DM 퍼널) */
+    get: operations['AdminInstagramInsightsController_detail'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** 인스타 게시물 카테고리 · 메모 수정 (category null = 자동 분류로 되돌림) */
+    patch: operations['AdminInstagramInsightsController_update'];
+    trace?: never;
+  };
+  '/admin/instagram/categories': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 카테고리별 성과 비교 (기준일 d1 · d3 · d7 · final) */
+    get: operations['AdminInstagramInsightsController_categories'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/instagram/sync': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** 성과 수집 배치를 지금 한 번 (SUPER). 첫 실행은 전체 게시물을 등록한다 */
+    post: operations['AdminInstagramInsightsController_sync'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/ping': {
     parameters: {
       query?: never;
@@ -3319,7 +3405,8 @@ export interface components {
         | 'DELETE_INSTAGRAM_REPLY_TEXT'
         | 'CREATE_INSTAGRAM_DM_TEMPLATE'
         | 'UPDATE_INSTAGRAM_DM_TEMPLATE'
-        | 'DELETE_INSTAGRAM_DM_TEMPLATE';
+        | 'DELETE_INSTAGRAM_DM_TEMPLATE'
+        | 'UPDATE_INSTAGRAM_MEDIA';
       /** @enum {string} */
       targetType:
         | 'USER'
@@ -3335,7 +3422,8 @@ export interface components {
         | 'INSTAGRAM_DM_POST'
         | 'INSTAGRAM_ACCOUNT'
         | 'INSTAGRAM_REPLY_TEXT'
-        | 'INSTAGRAM_DM_TEMPLATE';
+        | 'INSTAGRAM_DM_TEMPLATE'
+        | 'INSTAGRAM_MEDIA';
       /** @description 대상 식별자 raw (이름 해석 안 함) */
       targetId: string | null;
       /** @description 비고 (role 변경·email 등; 시크릿 미포함) */
@@ -4136,6 +4224,242 @@ export interface components {
       cards?: components['schemas']['AdminDmCardDto'][];
       /** @description cms에서 고르기 위한 이름 */
       name?: string;
+    };
+    AdminInstagramFollowerDayDto: {
+      /** @description KST YYYY-MM-DD */
+      date: string;
+      followers: number;
+      /** @description 앞 기록 대비 증감 (첫날은 null) */
+      change: number | null;
+    };
+    AdminInstagramFollowersDto: {
+      /** @description 가장 최근 수집 값 */
+      current: number | null;
+      /** @description 기간 마지막 날 − 첫날 (기록이 없으면 null) */
+      change: number | null;
+      daily: components['schemas']['AdminInstagramFollowerDayDto'][];
+    };
+    AdminInstagramTotalsDto: {
+      reach: number;
+      saved: number;
+      shares: number;
+      /** @description 게시물에 귀속된 팔로우 */
+      follows: number;
+    };
+    AdminInstagramMetricsDto: {
+      reach: number | null;
+      views: number | null;
+      likes: number | null;
+      comments: number | null;
+      saved: number | null;
+      shares: number | null;
+      totalInteractions: number | null;
+      /** @description 피드만 (릴스는 Meta가 주지 않으면 null) */
+      follows: number | null;
+      profileVisits: number | null;
+      /** @description 릴스만 (ms) */
+      avgWatchMs: number | null;
+      /** @description 릴스만 (ms) */
+      totalWatchMs: number | null;
+    };
+    AdminInstagramRatesDto: {
+      /** @description 저장 ÷ 도달 */
+      saveRate: number | null;
+      /** @description 공유 ÷ 도달 */
+      shareRate: number | null;
+      /** @description 팔로우 ÷ 도달 */
+      followRate: number | null;
+    };
+    AdminInstagramDmCountsDto: {
+      /** @description cms 인스타 DM 게시물 id */
+      postId: number;
+      firstDmCount: number;
+      linkSentCount: number;
+    };
+    AdminInstagramMediaItemDto: {
+      id: string;
+      shortcode: string;
+      permalink: string;
+      /** @description 인스타 CDN 주소 (만료될 수 있다) */
+      thumbnailUrl: string | null;
+      /** @description 캡션 첫 줄 (없으면 빈 문자열) */
+      title: string;
+      /** Format: date-time */
+      postedAt: string;
+      /** @description IMAGE · VIDEO · CAROUSEL_ALBUM */
+      mediaType: string;
+      /** @description FEED · REELS */
+      productType: string;
+      /** @enum {string} */
+      category:
+        | 'SINGLE_POSTING_CAROUSEL'
+        | 'WEEKLY_POSTINGS_CAROUSEL'
+        | 'WEEKLY_POSTINGS_REELS'
+        | 'JOB_INFO_CAROUSEL'
+        | 'ETC';
+      /** @enum {string} */
+      categorySource: 'AUTO' | 'MANUAL';
+      memo: string | null;
+      /** @description 게시 30일 안이라 매일 수집 중 */
+      tracking: boolean;
+      /** @description 최신 스냅샷의 게시 후 경과일 (24시간 단위) */
+      dayIndex: number | null;
+      /** Format: date-time */
+      lastSnapshotAt: string | null;
+      /** @description 마지막 수집 실패 이유 */
+      lastError: string | null;
+      /** @description 최신 스냅샷 누적값. 아직 수집 전이면 null */
+      metrics: components['schemas']['AdminInstagramMetricsDto'] | null;
+      rates: components['schemas']['AdminInstagramRatesDto'];
+      /** @description cms 인스타 DM에 등록 안 된 게시물은 null */
+      dm: components['schemas']['AdminInstagramDmCountsDto'] | null;
+    };
+    AdminInstagramOverviewDto: {
+      /** @description KST YYYY-MM-DD */
+      from: string;
+      followers: components['schemas']['AdminInstagramFollowersDto'];
+      /** @description 기간에 올린 게시물 수 */
+      mediaCount: number;
+      /** @description 기간 게시물의 최신 누적값 합계 */
+      totals: components['schemas']['AdminInstagramTotalsDto'];
+      /** @description 팔로우 합 ÷ 도달 합 (팔로우 값이 있는 게시물만) */
+      followRate: number | null;
+      /** @description 팔로우 많은 순 5개 */
+      topMedia: components['schemas']['AdminInstagramMediaItemDto'][];
+      /** Format: date-time */
+      lastCollectedAt: string | null;
+    };
+    AdminInstagramOverviewResponseDto: {
+      item: components['schemas']['AdminInstagramOverviewDto'];
+    };
+    AdminInstagramMediaListItemDto: {
+      id: string;
+      shortcode: string;
+      permalink: string;
+      /** @description 인스타 CDN 주소 (만료될 수 있다) */
+      thumbnailUrl: string | null;
+      /** @description 캡션 첫 줄 (없으면 빈 문자열) */
+      title: string;
+      /** Format: date-time */
+      postedAt: string;
+      /** @description IMAGE · VIDEO · CAROUSEL_ALBUM */
+      mediaType: string;
+      /** @description FEED · REELS */
+      productType: string;
+      /** @enum {string} */
+      category:
+        | 'SINGLE_POSTING_CAROUSEL'
+        | 'WEEKLY_POSTINGS_CAROUSEL'
+        | 'WEEKLY_POSTINGS_REELS'
+        | 'JOB_INFO_CAROUSEL'
+        | 'ETC';
+      /** @enum {string} */
+      categorySource: 'AUTO' | 'MANUAL';
+      memo: string | null;
+      /** @description 게시 30일 안이라 매일 수집 중 */
+      tracking: boolean;
+      /** @description 최신 스냅샷의 게시 후 경과일 (24시간 단위) */
+      dayIndex: number | null;
+      /** Format: date-time */
+      lastSnapshotAt: string | null;
+      /** @description 마지막 수집 실패 이유 */
+      lastError: string | null;
+      /** @description 최신 스냅샷 누적값. 아직 수집 전이면 null */
+      metrics: components['schemas']['AdminInstagramMetricsDto'] | null;
+      rates: components['schemas']['AdminInstagramRatesDto'];
+      /** @description cms 인스타 DM에 등록 안 된 게시물은 null */
+      dm: components['schemas']['AdminInstagramDmCountsDto'] | null;
+      /** @description 같은 카테고리 · 같은 기간의 팔로우 전환율 중앙값 (최종 기준) */
+      categoryFollowRateMedian: number | null;
+    };
+    AdminInstagramMediaListResponseDto: {
+      items: components['schemas']['AdminInstagramMediaListItemDto'][];
+      total: number;
+      page: number;
+      limit: number;
+    };
+    AdminInstagramSnapshotDto: {
+      /** @description 수집일 KST YYYY-MM-DD */
+      snapshotDate: string;
+      dayIndex: number;
+      /** Format: date-time */
+      capturedAt: string;
+      metrics: components['schemas']['AdminInstagramMetricsDto'];
+      /** @description 앞 스냅샷 대비 증가 (첫 스냅샷은 null) */
+      increase: components['schemas']['AdminInstagramMetricsDto'] | null;
+    };
+    AdminInstagramBasisCompareDto: {
+      /** @enum {string} */
+      basis: 'd1' | 'd3' | 'd7' | 'final';
+      /** @description 이 게시물 값 (그 기준 스냅샷이 없으면 null) */
+      media: components['schemas']['AdminInstagramRatesDto'] | null;
+      /** @description 같은 카테고리 중앙값 (기간 없이 전체) */
+      median: components['schemas']['AdminInstagramRatesDto'];
+      /** @description 중앙값을 낸 게시물 수 */
+      sampleSize: number;
+    };
+    AdminInstagramMediaDetailDto: {
+      media: components['schemas']['AdminInstagramMediaItemDto'];
+      /** @description 오래된 순 */
+      snapshots: components['schemas']['AdminInstagramSnapshotDto'][];
+      /** @description d1 · d3 · d7 · final 순 */
+      comparison: components['schemas']['AdminInstagramBasisCompareDto'][];
+    };
+    AdminInstagramMediaDetailResponseDto: {
+      item: components['schemas']['AdminInstagramMediaDetailDto'];
+    };
+    AdminUpdateInstagramMediaDto: {
+      /**
+       * @description 고르면 MANUAL(자동 분류가 덮어쓰지 않음), null이면 자동 분류로 되돌림
+       * @enum {string|null}
+       */
+      category?:
+        | 'SINGLE_POSTING_CAROUSEL'
+        | 'WEEKLY_POSTINGS_CAROUSEL'
+        | 'WEEKLY_POSTINGS_REELS'
+        | 'JOB_INFO_CAROUSEL'
+        | 'ETC'
+        | null;
+      /** @description 비우면 지운다 */
+      memo?: string | null;
+    };
+    AdminInstagramMediaResponseDto: {
+      item: components['schemas']['AdminInstagramMediaItemDto'];
+    };
+    AdminInstagramCategoryStatDto: {
+      /** @enum {string} */
+      category:
+        | 'SINGLE_POSTING_CAROUSEL'
+        | 'WEEKLY_POSTINGS_CAROUSEL'
+        | 'WEEKLY_POSTINGS_REELS'
+        | 'JOB_INFO_CAROUSEL'
+        | 'ETC';
+      /** @description 그 기준 스냅샷이 있는 게시물 수 */
+      mediaCount: number;
+      reachMedian: number | null;
+      saveRateMedian: number | null;
+      shareRateMedian: number | null;
+      followRateMedian: number | null;
+      /** @description 팔로우 평균 */
+      followsAvg: number | null;
+      /** @description 전체 카테고리 팔로우 합 중 이 카테고리 비중 (0~1) */
+      followsShare: number;
+    };
+    AdminInstagramCategoriesDto: {
+      /** @description KST YYYY-MM-DD */
+      from: string;
+      /** @enum {string} */
+      basis: 'd1' | 'd3' | 'd7' | 'final';
+      items: components['schemas']['AdminInstagramCategoryStatDto'][];
+    };
+    AdminInstagramCategoriesResponseDto: {
+      item: components['schemas']['AdminInstagramCategoriesDto'];
+    };
+    AdminInstagramSyncResponseDto: {
+      newMedia: number;
+      snapshots: number;
+      failed: number;
+      followers: number;
     };
     PingResponseDto: {
       /**
@@ -7331,7 +7655,8 @@ export interface operations {
           | 'DELETE_INSTAGRAM_REPLY_TEXT'
           | 'CREATE_INSTAGRAM_DM_TEMPLATE'
           | 'UPDATE_INSTAGRAM_DM_TEMPLATE'
-          | 'DELETE_INSTAGRAM_DM_TEMPLATE';
+          | 'DELETE_INSTAGRAM_DM_TEMPLATE'
+          | 'UPDATE_INSTAGRAM_MEDIA';
         targetType?:
           | 'USER'
           | 'INQUIRY'
@@ -7346,7 +7671,8 @@ export interface operations {
           | 'INSTAGRAM_DM_POST'
           | 'INSTAGRAM_ACCOUNT'
           | 'INSTAGRAM_REPLY_TEXT'
-          | 'INSTAGRAM_DM_TEMPLATE';
+          | 'INSTAGRAM_DM_TEMPLATE'
+          | 'INSTAGRAM_MEDIA';
         /** @description 조회 시작일 (KST, YYYY-MM-DD, 포함) */
         createdFrom?: string;
         /** @description 조회 종료일 (KST, YYYY-MM-DD, 포함) */
@@ -9122,6 +9448,257 @@ export interface operations {
       };
       /** @description INSTAGRAM_DM_TEMPLATE_NOT_FOUND */
       404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramInsightsController_overview: {
+    parameters: {
+      query?: {
+        /** @description 최근 며칠에 올린 게시물 (게시일 KST 기준) */
+        days?: 7 | 30 | 90 | 365;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminInstagramOverviewResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramInsightsController_list: {
+    parameters: {
+      query?: {
+        /** @description 최근 며칠에 올린 게시물 (게시일 KST 기준) */
+        days?: 7 | 30 | 90 | 365;
+        category?:
+          | 'SINGLE_POSTING_CAROUSEL'
+          | 'WEEKLY_POSTINGS_CAROUSEL'
+          | 'WEEKLY_POSTINGS_REELS'
+          | 'JOB_INFO_CAROUSEL'
+          | 'ETC';
+        /** @description FEED = 피드 · 캐러셀, REELS = 릴스 */
+        type?: 'FEED' | 'REELS';
+        /** @description true면 추적 중(게시 30일 안)만 */
+        tracking?: boolean;
+        /** @description posted = 최근 게시순, 나머지는 큰 값부터 (값 없는 게시물은 뒤로) */
+        sort?: 'posted' | 'reach' | 'follows' | 'follow_rate' | 'save_rate' | 'share_rate';
+        page?: components['schemas']['Object'];
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminInstagramMediaListResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramInsightsController_detail: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminInstagramMediaDetailResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description INSTAGRAM_MEDIA_NOT_FOUND */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramInsightsController_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminUpdateInstagramMediaDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminInstagramMediaResponseDto'];
+        };
+      };
+      /** @description 입력 오류 */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description INSTAGRAM_MEDIA_NOT_FOUND */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramInsightsController_categories: {
+    parameters: {
+      query?: {
+        /** @description 최근 며칠에 올린 게시물 (게시일 KST 기준) */
+        days?: 7 | 30 | 90 | 365;
+        /** @description 비교 기준. dN = 게시 후 N일(24시간 단위) 스냅샷, final = 마지막 스냅샷 */
+        basis?: 'd1' | 'd3' | 'd7' | 'final';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminInstagramCategoriesResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramInsightsController_sync: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminInstagramSyncResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
         headers: {
           [name: string]: unknown;
         };

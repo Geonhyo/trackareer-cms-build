@@ -1,0 +1,100 @@
+.thumb {
+  display: inline-block;
+  flex: none;
+  border-radius: var(--r2);
+  background: var(--bg-neutral-weak);
+  object-fit: cover;
+  vertical-align: middle;
+}
+.title {
+  display: inline-flex;
+  gap: var(--x1_5);
+  align-items: center;
+  flex-wrap: wrap;
+}
+.live {
+  color: var(--fg-positive);
+  font-size: 10px;
+}
+.muted {
+  color: var(--fg-muted);
+  font-size: var(--t3);
+}
+
+/* ===== 필터 ===== */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--x3);
+  align-items: flex-end;
+}
+.filters > * {
+  min-width: 160px;
+}
+.filterActions {
+  display: flex;
+  gap: var(--x2);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ===== 개요 상위 게시물 ===== */
+.topList {
+  display: grid;
+  gap: var(--x3);
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+.topItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--x2);
+  padding: var(--x3);
+  border: 1px solid var(--stroke-muted);
+  border-radius: var(--r3);
+}
+.topItem:hover {
+  border-color: var(--stroke);
+  box-shadow: var(--shadow-1);
+}
+.topTitle {
+  font-weight: var(--medium);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ===== 상세 ===== */
+.header {
+  display: flex;
+  gap: var(--x4);
+  align-items: center;
+}
+.compare {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t4);
+}
+.compare th,
+.compare td {
+  padding: var(--x2) var(--x3);
+  border-bottom: 1px solid var(--stroke-muted);
+  text-align: right;
+  white-space: nowrap;
+}
+.compare th:first-child,
+.compare td:first-child {
+  text-align: left;
+}
+.compare th {
+  color: var(--fg-muted);
+  font-weight: var(--medium);
+}
+.compare small {
+  display: block;
+  color: var(--fg-subtle);
+  font-size: var(--t2);
+}
+.tableWrap {
+  overflow-x: auto;
+}

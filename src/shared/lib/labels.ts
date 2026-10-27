@@ -112,3 +112,17 @@ export const POSTING_ORIGIN_LABEL: Record<string, string> = {
   OTHER: '기타 사이트 링크',
   UNKNOWN: '구버전 (출처 없음)',
 };
+
+// 인스타 성과 카테고리 (서버 instagram/domain/media-category, 2026-10-28 네 가지 + 기타로 시작)
+export const MEDIA_CATEGORY_LABEL: Record<string, string> = {
+  SINGLE_POSTING_CAROUSEL: '단건공고 캐러셀',
+  WEEKLY_POSTINGS_CAROUSEL: '금주의 공고 캐러셀',
+  WEEKLY_POSTINGS_REELS: '금주의 공고 릴스',
+  JOB_INFO_CAROUSEL: '취준정보 캐러셀',
+  ETC: '기타',
+};
+
+export const MEDIA_PRODUCT_LABEL: Record<string, string> = {
+  FEED: '캐러셀 · 피드',
+  REELS: '릴스',
+};
