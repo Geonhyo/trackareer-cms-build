@@ -4,15 +4,12 @@ import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tan
 import { useRouter } from 'next/navigation';
 import styles from './DataTable.module.css';
 
-// 행 이동 대신 제 동작을 하는 칸 안의 요소
-const INTERACTIVE = 'a, button, input, select, textarea, label';
-
 // 열 설정: align 숫자는 오른쪽, wrap 긴 글만 줄바꿈 (나머지 칸은 한 줄)
 export type ColumnMeta = { align?: 'right' | 'center'; wrap?: boolean };
 
 /**
  * 표 (TanStack Table). 정렬 · 페이지는 서버가 하고 URL로 넘기므로 여기서는 그리기만 한다.
- * rowHref를 주면 행을 눌러 상세로 간다. 칸 안의 링크 · 버튼 · 입력을 누른 건 이동하지 않는다.
+ * rowHref를 주면 행을 눌러 상세로 간다.
  */
 export function DataTable<T>({
   columns,
@@ -62,14 +59,7 @@ export function DataTable<T>({
               <tr
                 key={row.id}
                 className={rowHref ? styles.clickable : undefined}
-                onClick={
-                  rowHref
-                    ? (event) => {
-                        if ((event.target as Element).closest(INTERACTIVE)) return;
-                        router.push(rowHref(row.original));
-                      }
-                    : undefined
-                }
+                onClick={rowHref ? () => router.push(rowHref(row.original)) : undefined}
               >
                 {row.getVisibleCells().map((cell) => (
                   <td

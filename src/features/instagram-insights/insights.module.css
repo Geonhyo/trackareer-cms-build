@@ -99,15 +99,6 @@
   overflow-x: auto;
 }
 
-/* 게시물 표 안의 카테고리 select */
-.inlineSelect {
-  width: auto;
-  max-width: 160px;
-  height: 30px;
-  padding: 0 var(--x2);
-  font-size: var(--t3);
-}
-
 /* 카테고리 관리: 한 줄 = 이름 수정 · 게시물 수 · 삭제 */
 .categoryRow {
   display: flex;

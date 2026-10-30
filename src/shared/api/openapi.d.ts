@@ -1847,7 +1847,7 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
-    /** 인스타 게시물 카테고리 · 메모 수정 (categoryId null = 자동 분류로 되돌림) */
+    /** 인스타 게시물 유형 · 카테고리 · 메모 수정 (productType null = 인스타 값, categoryId null = 자동 분류로 되돌림) */
     patch: operations['AdminInstagramInsightsController_update'];
     trace?: never;
   };
@@ -4328,8 +4328,10 @@ export interface components {
       postedAt: string;
       /** @description IMAGE · VIDEO · CAROUSEL_ALBUM */
       mediaType: string;
-      /** @description FEED · REELS */
+      /** @description FEED · REELS (cms에서 고쳤으면 그 값) */
       productType: string;
+      /** @description 인스타 값과 다른 유형으로 고쳤으면 true */
+      productTypeManual: boolean;
       categoryId: number;
       categoryName: string;
       /** @enum {string} */
@@ -4379,8 +4381,10 @@ export interface components {
       postedAt: string;
       /** @description IMAGE · VIDEO · CAROUSEL_ALBUM */
       mediaType: string;
-      /** @description FEED · REELS */
+      /** @description FEED · REELS (cms에서 고쳤으면 그 값) */
       productType: string;
+      /** @description 인스타 값과 다른 유형으로 고쳤으면 true */
+      productTypeManual: boolean;
       categoryId: number;
       categoryName: string;
       /** @enum {string} */
@@ -4439,8 +4443,13 @@ export interface components {
       item: components['schemas']['AdminInstagramMediaDetailDto'];
     };
     AdminUpdateInstagramMediaDto: {
-      /** @description 카테고리 id. 고르면 MANUAL(자동 분류가 덮어쓰지 않음), null이면 자동 분류로 되돌림 */
+      /** @description 카테고리 id. 바꾸면 MANUAL(자동 분류가 덮어쓰지 않음), 지금과 같으면 그대로, null이면 자동 분류로 되돌림 */
       categoryId?: number | null;
+      /**
+       * @description 유형을 고친다(화면 · 필터 · 비교 · 자동 분류에 쓰고, 수집은 인스타 값). null이면 인스타 값으로. 자동 분류 게시물은 바뀐 유형으로 다시 분류한다
+       * @enum {string|null}
+       */
+      productType?: 'FEED' | 'REELS' | null;
       /** @description 비우면 지운다 */
       memo?: string | null;
     };

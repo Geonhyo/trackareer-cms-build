@@ -130,6 +130,7 @@ export default async function InstagramMediaPage({
           <Row>
             <Badge tone="brand">{media.categoryName}</Badge>
             {media.categorySource === 'MANUAL' && <Badge>수동 분류</Badge>}
+            {media.productTypeManual && <Badge>유형 수동</Badge>}
             {label(MEDIA_PRODUCT_LABEL, media.productType)} · {formatDateTime(media.postedAt)} 게시
             · 경과 {media.dayIndex ?? '—'}일 {media.tracking ? '(수집 중)' : '(수집 끝)'}
           </Row>
@@ -227,7 +228,7 @@ export default async function InstagramMediaPage({
         </Grid>
         <Card title="관리">
           <MediaEditForm
-            key={`${media.categoryId}-${media.memo}`}
+            key={`${media.categoryId}-${media.productType}-${media.memo}`}
             media={media}
             categories={categories}
           />

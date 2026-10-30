@@ -6,38 +6,30 @@ import { toActionError, type ActionResult } from '@/shared/api/errors';
 import type { Schemas } from '@/shared/api/types';
 import { AUTO_CATEGORY } from './insights-types';
 
-/** 카테고리 select 값 → id ('자동 분류로 되돌리기'는 null) */
-const categoryIdOf = (value: string) => (value === AUTO_CATEGORY ? null : Number(value));
-
-/** 게시물 수정. categoryId null = 자동 분류로 되돌림 */
-async function patchMedia(
-  id: string,
-  body: { categoryId?: number | null; memo?: string | null },
-): Promise<ActionResult> {
-  try {
-    await adminApi(`/admin/instagram/media/${encodeURIComponent(id)}`, { method: 'PATCH', body });
-  } catch (error) {
-    return toActionError(error);
-  }
-  revalidatePath('/instagram-insights', 'layout');
-  return { ok: true, data: undefined, message: '저장했어요.' };
-}
-
-/** 카테고리 · 메모. 카테고리를 '자동 분류로 되돌리기'로 고르면 null을 보내 서버가 다시 분류한다 */
+/**
+ * 게시물 상세의 유형 · 카테고리 · 메모. 지금과 같은 카테고리는 서버가 그대로 두고(자동 분류 유지),
+ * '자동 분류로 되돌리기'는 null로 보낸다
+ */
 export async function updateMediaAction(
   id: string,
   _prev: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
-  return patchMedia(id, {
-    categoryId: categoryIdOf(String(formData.get('categoryId') ?? '')),
-    memo: String(formData.get('memo') ?? '').trim() || null,
-  });
-}
-
-/** 게시물 표에서 카테고리만 바로 바꾼다 */
-export async function setMediaCategoryAction(id: string, value: string): Promise<ActionResult> {
-  return patchMedia(id, { categoryId: categoryIdOf(value) });
+  const category = String(formData.get('categoryId') ?? '');
+  try {
+    await adminApi(`/admin/instagram/media/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: {
+        productType: String(formData.get('productType') ?? ''),
+        categoryId: category === AUTO_CATEGORY ? null : Number(category),
+        memo: String(formData.get('memo') ?? '').trim() || null,
+      },
+    });
+  } catch (error) {
+    return toActionError(error);
+  }
+  revalidatePath('/instagram-insights', 'layout');
+  return { ok: true, data: undefined, message: '저장했어요.' };
 }
 
 /** 카테고리 추가(id null) · 이름 변경 */

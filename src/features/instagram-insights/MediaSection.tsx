@@ -82,7 +82,7 @@ export async function MediaSection({ days, params }: { days: string; params: Sea
           </LinkButton>
         </div>
       </form>
-      <MediaTable items={result.items} categories={categories} />
+      <MediaTable items={result.items} />
       <Pagination
         page={page}
         limit={result.limit}

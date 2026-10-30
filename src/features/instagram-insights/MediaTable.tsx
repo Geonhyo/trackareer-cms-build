@@ -1,22 +1,15 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import { useMemo } from 'react';
 import { Badge } from '@/components/ui';
 import { DataTable } from '@/components/ui/DataTable';
 import { formatDate, formatNumber } from '@/shared/lib/format';
 import { MEDIA_PRODUCT_LABEL, label } from '@/shared/lib/labels';
-import { CategorySelect } from './CategorySelect';
-import {
-  followRateTone,
-  formatRate,
-  type MediaCategory,
-  type MediaListItem,
-} from './insights-types';
+import { followRateTone, formatRate, type MediaListItem } from './insights-types';
 import { Thumbnail } from './Thumbnail';
 import styles from './insights.module.css';
 
-const columnsFor = (categories: MediaCategory[]): ColumnDef<MediaListItem, unknown>[] => [
+const columns: ColumnDef<MediaListItem, unknown>[] = [
   {
     header: '',
     id: 'thumb',
@@ -36,13 +29,23 @@ const columnsFor = (categories: MediaCategory[]): ColumnDef<MediaListItem, unkno
   { header: '게시일', cell: ({ row }) => formatDate(row.original.postedAt), size: 104 },
   {
     header: '유형',
-    cell: ({ row }) => label(MEDIA_PRODUCT_LABEL, row.original.productType),
-    size: 96,
+    cell: ({ row }) => (
+      <span className={styles.title}>
+        {label(MEDIA_PRODUCT_LABEL, row.original.productType)}
+        {row.original.productTypeManual && <Badge tone="brand">수동</Badge>}
+      </span>
+    ),
+    size: 128,
   },
   {
     header: '카테고리',
-    cell: ({ row }) => <CategorySelect media={row.original} categories={categories} />,
-    size: 200,
+    cell: ({ row }) => (
+      <span className={styles.title}>
+        {row.original.categoryName}
+        {row.original.categorySource === 'MANUAL' && <Badge tone="brand">수동</Badge>}
+      </span>
+    ),
+    size: 160,
   },
   {
     header: '경과일',
@@ -108,14 +111,7 @@ const columnsFor = (categories: MediaCategory[]): ColumnDef<MediaListItem, unkno
   },
 ];
 
-export function MediaTable({
-  items,
-  categories,
-}: {
-  items: MediaListItem[];
-  categories: MediaCategory[];
-}) {
-  const columns = useMemo(() => columnsFor(categories), [categories]);
+export function MediaTable({ items }: { items: MediaListItem[] }) {
   return (
     <DataTable
       columns={columns}

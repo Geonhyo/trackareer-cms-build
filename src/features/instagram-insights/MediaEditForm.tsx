@@ -3,6 +3,7 @@
 import { useActionState } from 'react';
 import { Field, Notice, Row, Select, Stack, Textarea } from '@/components/ui';
 import { SubmitButton } from '@/components/ui/SubmitButton';
+import { MEDIA_PRODUCT_LABEL } from '@/shared/lib/labels';
 import { updateMediaAction } from './actions';
 import { CategoryOptions } from './CategoryOptions';
 import type { MediaCategory, MediaItem } from './insights-types';
@@ -18,6 +19,22 @@ export function MediaEditForm({
   return (
     <form action={action}>
       <Stack>
+        <Field
+          label="유형"
+          hint={
+            media.productTypeManual
+              ? '인스타 유형과 다르게 고친 값이에요. 성과 수집은 인스타 유형 그대로 해요.'
+              : '인스타가 알려 준 유형이에요. 고치면 화면 · 필터 · 비교 · 자동 분류에 써요.'
+          }
+        >
+          <Select name="productType" defaultValue={media.productType}>
+            {Object.entries(MEDIA_PRODUCT_LABEL).map(([value, text]) => (
+              <option key={value} value={value}>
+                {text}
+              </option>
+            ))}
+          </Select>
+        </Field>
         <Field
           label="카테고리"
           hint={
