@@ -3,7 +3,6 @@
 import { SERIES } from '@/features/dashboard/chart-theme';
 import { Bars, TrendLine } from '@/features/dashboard/Charts';
 import type { Schemas } from '@/shared/api/types';
-import { MEDIA_CATEGORY_LABEL, label } from '@/shared/lib/labels';
 
 type FollowerDay = Schemas['AdminInstagramFollowerDayDto'];
 type Snapshot = Schemas['AdminInstagramSnapshotDto'];
@@ -37,7 +36,7 @@ export function CategoryFollowsChart({ items }: { items: Stat[] }) {
   return (
     <Bars
       data={items.map((item) => ({
-        category: label(MEDIA_CATEGORY_LABEL, item.category),
+        category: item.name,
         followsAvg: item.followsAvg ?? 0,
       }))}
       xKey="category"

@@ -4,13 +4,12 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/DataTable';
 import type { Schemas } from '@/shared/api/types';
 import { formatNumber, formatPercent } from '@/shared/lib/format';
-import { MEDIA_CATEGORY_LABEL, label } from '@/shared/lib/labels';
 import { formatRate } from './insights-types';
 
 type Stat = Schemas['AdminInstagramCategoryStatDto'];
 
 const columns: ColumnDef<Stat, unknown>[] = [
-  { header: '카테고리', cell: ({ row }) => label(MEDIA_CATEGORY_LABEL, row.original.category) },
+  { header: '카테고리', cell: ({ row }) => row.original.name },
   {
     header: '게시물',
     cell: ({ row }) => formatNumber(row.original.mediaCount),

@@ -13,6 +13,7 @@ import {
   Tabs,
 } from '@/components/ui';
 import { BarList } from '@/features/dashboard/BarList';
+import { listCategories } from '@/features/instagram-insights/categories';
 import {
   BASIS_LABEL,
   formatRate,
@@ -30,7 +31,7 @@ import { adminApi } from '@/shared/api/admin-api';
 import { ApiError } from '@/shared/api/errors';
 import type { Schemas } from '@/shared/api/types';
 import { formatDateTime, formatNumber, formatPercent } from '@/shared/lib/format';
-import { MEDIA_CATEGORY_LABEL, MEDIA_PRODUCT_LABEL, label } from '@/shared/lib/labels';
+import { MEDIA_PRODUCT_LABEL, label } from '@/shared/lib/labels';
 import { param } from '@/shared/lib/url';
 
 export const metadata: Metadata = { title: '인스타 게시물 성과' };
@@ -108,7 +109,10 @@ export default async function InstagramMediaPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
-  const { media, snapshots, comparison } = await loadDetail(id);
+  const [{ media, snapshots, comparison }, categories] = await Promise.all([
+    loadDetail(id),
+    listCategories(),
+  ]);
   const metricKey = param(query.metric);
   const metric: SnapshotMetric =
     metricKey && metricKey in METRICS ? (metricKey as SnapshotMetric) : 'reach';
@@ -124,7 +128,7 @@ export default async function InstagramMediaPage({
         }
         description={
           <Row>
-            <Badge tone="brand">{label(MEDIA_CATEGORY_LABEL, media.category)}</Badge>
+            <Badge tone="brand">{media.categoryName}</Badge>
             {media.categorySource === 'MANUAL' && <Badge>수동 분류</Badge>}
             {label(MEDIA_PRODUCT_LABEL, media.productType)} · {formatDateTime(media.postedAt)} 게시
             · 경과 {media.dayIndex ?? '—'}일 {media.tracking ? '(수집 중)' : '(수집 끝)'}
@@ -222,7 +226,11 @@ export default async function InstagramMediaPage({
           </Card>
         </Grid>
         <Card title="관리">
-          <MediaEditForm key={`${media.category}-${media.memo}`} media={media} />
+          <MediaEditForm
+            key={`${media.categoryId}-${media.memo}`}
+            media={media}
+            categories={categories}
+          />
         </Card>
       </Stack>
     </>

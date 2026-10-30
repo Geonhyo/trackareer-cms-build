@@ -4,6 +4,7 @@ import { formatPercent } from '@/shared/lib/format';
 
 export type MediaItem = Schemas['AdminInstagramMediaItemDto'];
 export type MediaListItem = Schemas['AdminInstagramMediaListItemDto'];
+export type MediaCategory = Schemas['AdminInstagramMediaCategoryDto'];
 
 export const INSIGHTS_DAYS = ['7', '30', '90', '365'] as const;
 export const BASES = ['d1', 'd3', 'd7', 'final'] as const;

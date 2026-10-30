@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { Card, PageHeader, Stack, Tabs } from '@/components/ui';
+import { Card, LinkButton, PageHeader, Row, Stack, Tabs } from '@/components/ui';
 import { ActionButton } from '@/components/ui/ActionButton';
 import { syncInsightsAction } from '@/features/instagram-insights/actions';
 import { CategoriesSection } from '@/features/instagram-insights/CategoriesSection';
@@ -50,14 +50,17 @@ export default async function InstagramInsightsPage({
         title="인스타 성과"
         description={`마지막 수집 ${formatDateTime(collectedAt)} · 게시 후 30일까지 매일 06:00에 수집해요`}
         action={
-          isSuperAdmin(admin) ? (
-            <ActionButton
-              action={syncInsightsAction}
-              confirm="지금 한 번 수집할까요? 처음이면 전체 게시물을 등록해 1분쯤 걸릴 수 있어요."
-            >
-              지금 수집
-            </ActionButton>
-          ) : undefined
+          <Row>
+            <LinkButton href="/instagram-insights/categories">카테고리 관리</LinkButton>
+            {isSuperAdmin(admin) && (
+              <ActionButton
+                action={syncInsightsAction}
+                confirm="지금 한 번 수집할까요? 처음이면 전체 게시물을 등록해 1분쯤 걸릴 수 있어요."
+              >
+                지금 수집
+              </ActionButton>
+            )}
+          </Row>
         }
       />
       <Stack>

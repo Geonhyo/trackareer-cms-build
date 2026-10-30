@@ -1,8 +1,10 @@
 import { Button, Checkbox, Field, LinkButton, Pagination, Select, Stack } from '@/components/ui';
 import { adminApi } from '@/shared/api/admin-api';
 import type { Schemas } from '@/shared/api/types';
-import { MEDIA_CATEGORY_LABEL, MEDIA_PRODUCT_LABEL } from '@/shared/lib/labels';
+import { MEDIA_PRODUCT_LABEL } from '@/shared/lib/labels';
 import { pageParam, param, withQuery } from '@/shared/lib/url';
+import { listCategories } from './categories';
+import { CategoryOptions } from './CategoryOptions';
 import { MediaTable } from './MediaTable';
 import styles from './insights.module.css';
 
@@ -22,15 +24,15 @@ export async function MediaSection({ days, params }: { days: string; params: Sea
   const query = {
     days,
     page,
-    category: param(params.category),
+    categoryId: param(params.categoryId),
     type: param(params.type),
     tracking: param(params.tracking),
     sort: param(params.sort) ?? 'posted',
   };
-  const result = await adminApi<Schemas['AdminInstagramMediaListResponseDto']>(
-    '/admin/instagram/media',
-    { query },
-  );
+  const [result, categories] = await Promise.all([
+    adminApi<Schemas['AdminInstagramMediaListResponseDto']>('/admin/instagram/media', { query }),
+    listCategories(),
+  ]);
 
   return (
     <Stack>
@@ -38,13 +40,9 @@ export async function MediaSection({ days, params }: { days: string; params: Sea
         <input type="hidden" name="tab" value="media" />
         <input type="hidden" name="days" value={days} />
         <Field label="카테고리">
-          <Select name="category" defaultValue={query.category ?? ''}>
+          <Select name="categoryId" defaultValue={query.categoryId ?? ''}>
             <option value="">전체</option>
-            {Object.entries(MEDIA_CATEGORY_LABEL).map(([value, text]) => (
-              <option key={value} value={value}>
-                {text}
-              </option>
-            ))}
+            <CategoryOptions categories={categories} />
           </Select>
         </Field>
         <Field label="유형">
@@ -84,7 +82,7 @@ export async function MediaSection({ days, params }: { days: string; params: Sea
           </LinkButton>
         </div>
       </form>
-      <MediaTable items={result.items} />
+      <MediaTable items={result.items} categories={categories} />
       <Pagination
         page={page}
         limit={result.limit}

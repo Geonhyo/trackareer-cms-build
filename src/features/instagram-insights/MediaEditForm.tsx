@@ -3,11 +3,17 @@
 import { useActionState } from 'react';
 import { Field, Notice, Row, Select, Stack, Textarea } from '@/components/ui';
 import { SubmitButton } from '@/components/ui/SubmitButton';
-import { MEDIA_CATEGORY_LABEL } from '@/shared/lib/labels';
 import { updateMediaAction } from './actions';
-import { AUTO_CATEGORY, type MediaItem } from './insights-types';
+import { CategoryOptions } from './CategoryOptions';
+import type { MediaCategory, MediaItem } from './insights-types';
 
-export function MediaEditForm({ media }: { media: MediaItem }) {
+export function MediaEditForm({
+  media,
+  categories,
+}: {
+  media: MediaItem;
+  categories: MediaCategory[];
+}) {
   const [state, action] = useActionState(updateMediaAction.bind(null, media.id), null);
   return (
     <form action={action}>
@@ -20,15 +26,8 @@ export function MediaEditForm({ media }: { media: MediaItem }) {
               : '캡션 규칙으로 자동 분류했어요. 틀렸으면 고쳐 주세요.'
           }
         >
-          <Select name="category" defaultValue={media.category}>
-            {Object.entries(MEDIA_CATEGORY_LABEL).map(([value, text]) => (
-              <option key={value} value={value}>
-                {text}
-              </option>
-            ))}
-            {media.categorySource === 'MANUAL' && (
-              <option value={AUTO_CATEGORY}>자동 분류로 되돌리기</option>
-            )}
+          <Select name="categoryId" defaultValue={media.categoryId}>
+            <CategoryOptions categories={categories} media={media} />
           </Select>
         </Field>
         <Field label="메모" hint="500자까지">

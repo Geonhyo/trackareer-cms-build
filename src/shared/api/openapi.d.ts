@@ -1847,7 +1847,7 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
-    /** 인스타 게시물 카테고리 · 메모 수정 (category null = 자동 분류로 되돌림) */
+    /** 인스타 게시물 카테고리 · 메모 수정 (categoryId null = 자동 분류로 되돌림) */
     patch: operations['AdminInstagramInsightsController_update'];
     trace?: never;
   };
@@ -1866,6 +1866,42 @@ export interface paths {
     options?: never;
     head?: never;
     patch?: never;
+    trace?: never;
+  };
+  '/admin/instagram/media-categories': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 카테고리 목록 (게시물 수 포함) */
+    get: operations['AdminInstagramInsightsController_listCategories'];
+    put?: never;
+    /** 카테고리 추가 (수동 지정 전용, 자동 분류는 고르지 않는다) */
+    post: operations['AdminInstagramInsightsController_createCategory'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/instagram/media-categories/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** 추가한 카테고리 삭제 (그 게시물은 자동 분류로 돌아간다) */
+    delete: operations['AdminInstagramInsightsController_removeCategory'];
+    options?: never;
+    head?: never;
+    /** 카테고리 이름 변경 (기본 카테고리도 가능) */
+    patch: operations['AdminInstagramInsightsController_updateCategory'];
     trace?: never;
   };
   '/admin/instagram/sync': {
@@ -3406,7 +3442,10 @@ export interface components {
         | 'CREATE_INSTAGRAM_DM_TEMPLATE'
         | 'UPDATE_INSTAGRAM_DM_TEMPLATE'
         | 'DELETE_INSTAGRAM_DM_TEMPLATE'
-        | 'UPDATE_INSTAGRAM_MEDIA';
+        | 'UPDATE_INSTAGRAM_MEDIA'
+        | 'CREATE_INSTAGRAM_MEDIA_CATEGORY'
+        | 'UPDATE_INSTAGRAM_MEDIA_CATEGORY'
+        | 'DELETE_INSTAGRAM_MEDIA_CATEGORY';
       /** @enum {string} */
       targetType:
         | 'USER'
@@ -3423,7 +3462,8 @@ export interface components {
         | 'INSTAGRAM_ACCOUNT'
         | 'INSTAGRAM_REPLY_TEXT'
         | 'INSTAGRAM_DM_TEMPLATE'
-        | 'INSTAGRAM_MEDIA';
+        | 'INSTAGRAM_MEDIA'
+        | 'INSTAGRAM_MEDIA_CATEGORY';
       /** @description 대상 식별자 raw (이름 해석 안 함) */
       targetId: string | null;
       /** @description 비고 (role 변경·email 등; 시크릿 미포함) */
@@ -4290,13 +4330,8 @@ export interface components {
       mediaType: string;
       /** @description FEED · REELS */
       productType: string;
-      /** @enum {string} */
-      category:
-        | 'SINGLE_POSTING_CAROUSEL'
-        | 'WEEKLY_POSTINGS_CAROUSEL'
-        | 'WEEKLY_POSTINGS_REELS'
-        | 'JOB_INFO_CAROUSEL'
-        | 'ETC';
+      categoryId: number;
+      categoryName: string;
       /** @enum {string} */
       categorySource: 'AUTO' | 'MANUAL';
       memo: string | null;
@@ -4346,13 +4381,8 @@ export interface components {
       mediaType: string;
       /** @description FEED · REELS */
       productType: string;
-      /** @enum {string} */
-      category:
-        | 'SINGLE_POSTING_CAROUSEL'
-        | 'WEEKLY_POSTINGS_CAROUSEL'
-        | 'WEEKLY_POSTINGS_REELS'
-        | 'JOB_INFO_CAROUSEL'
-        | 'ETC';
+      categoryId: number;
+      categoryName: string;
       /** @enum {string} */
       categorySource: 'AUTO' | 'MANUAL';
       memo: string | null;
@@ -4409,17 +4439,8 @@ export interface components {
       item: components['schemas']['AdminInstagramMediaDetailDto'];
     };
     AdminUpdateInstagramMediaDto: {
-      /**
-       * @description 고르면 MANUAL(자동 분류가 덮어쓰지 않음), null이면 자동 분류로 되돌림
-       * @enum {string|null}
-       */
-      category?:
-        | 'SINGLE_POSTING_CAROUSEL'
-        | 'WEEKLY_POSTINGS_CAROUSEL'
-        | 'WEEKLY_POSTINGS_REELS'
-        | 'JOB_INFO_CAROUSEL'
-        | 'ETC'
-        | null;
+      /** @description 카테고리 id. 고르면 MANUAL(자동 분류가 덮어쓰지 않음), null이면 자동 분류로 되돌림 */
+      categoryId?: number | null;
       /** @description 비우면 지운다 */
       memo?: string | null;
     };
@@ -4427,13 +4448,8 @@ export interface components {
       item: components['schemas']['AdminInstagramMediaItemDto'];
     };
     AdminInstagramCategoryStatDto: {
-      /** @enum {string} */
-      category:
-        | 'SINGLE_POSTING_CAROUSEL'
-        | 'WEEKLY_POSTINGS_CAROUSEL'
-        | 'WEEKLY_POSTINGS_REELS'
-        | 'JOB_INFO_CAROUSEL'
-        | 'ETC';
+      categoryId: number;
+      name: string;
       /** @description 그 기준 스냅샷이 있는 게시물 수 */
       mediaCount: number;
       reachMedian: number | null;
@@ -4454,6 +4470,24 @@ export interface components {
     };
     AdminInstagramCategoriesResponseDto: {
       item: components['schemas']['AdminInstagramCategoriesDto'];
+    };
+    AdminInstagramMediaCategoryDto: {
+      id: number;
+      name: string;
+      /** @description 자동 분류에 쓰는 기본 카테고리 (지울 수 없음, 이름은 바꿀 수 있음) */
+      builtIn: boolean;
+      /** @description 이 카테고리의 게시물 수 (기간 없이 전체) */
+      mediaCount: number;
+    };
+    AdminInstagramMediaCategoryListResponseDto: {
+      /** @description 기본 카테고리 · 추가한 순, 기타는 맨 뒤 */
+      items: components['schemas']['AdminInstagramMediaCategoryDto'][];
+    };
+    AdminSaveInstagramMediaCategoryDto: {
+      name: string;
+    };
+    AdminInstagramMediaCategoryResponseDto: {
+      item: components['schemas']['AdminInstagramMediaCategoryDto'];
     };
     AdminInstagramSyncResponseDto: {
       newMedia: number;
@@ -7656,7 +7690,10 @@ export interface operations {
           | 'CREATE_INSTAGRAM_DM_TEMPLATE'
           | 'UPDATE_INSTAGRAM_DM_TEMPLATE'
           | 'DELETE_INSTAGRAM_DM_TEMPLATE'
-          | 'UPDATE_INSTAGRAM_MEDIA';
+          | 'UPDATE_INSTAGRAM_MEDIA'
+          | 'CREATE_INSTAGRAM_MEDIA_CATEGORY'
+          | 'UPDATE_INSTAGRAM_MEDIA_CATEGORY'
+          | 'DELETE_INSTAGRAM_MEDIA_CATEGORY';
         targetType?:
           | 'USER'
           | 'INQUIRY'
@@ -7672,7 +7709,8 @@ export interface operations {
           | 'INSTAGRAM_ACCOUNT'
           | 'INSTAGRAM_REPLY_TEXT'
           | 'INSTAGRAM_DM_TEMPLATE'
-          | 'INSTAGRAM_MEDIA';
+          | 'INSTAGRAM_MEDIA'
+          | 'INSTAGRAM_MEDIA_CATEGORY';
         /** @description 조회 시작일 (KST, YYYY-MM-DD, 포함) */
         createdFrom?: string;
         /** @description 조회 종료일 (KST, YYYY-MM-DD, 포함) */
@@ -9496,12 +9534,8 @@ export interface operations {
       query?: {
         /** @description 최근 며칠에 올린 게시물 (게시일 KST 기준) */
         days?: 7 | 30 | 90 | 365;
-        category?:
-          | 'SINGLE_POSTING_CAROUSEL'
-          | 'WEEKLY_POSTINGS_CAROUSEL'
-          | 'WEEKLY_POSTINGS_REELS'
-          | 'JOB_INFO_CAROUSEL'
-          | 'ETC';
+        /** @description 카테고리 id */
+        categoryId?: number;
         /** @description FEED = 피드 · 캐러셀, REELS = 릴스 */
         type?: 'FEED' | 'REELS';
         /** @description true면 추적 중(게시 30일 안)만 */
@@ -9626,7 +9660,7 @@ export interface operations {
         };
         content?: never;
       };
-      /** @description INSTAGRAM_MEDIA_NOT_FOUND */
+      /** @description INSTAGRAM_MEDIA_NOT_FOUND · INSTAGRAM_MEDIA_CATEGORY_NOT_FOUND */
       404: {
         headers: {
           [name: string]: unknown;
@@ -9666,6 +9700,190 @@ export interface operations {
       };
       /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
       403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramInsightsController_listCategories: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminInstagramMediaCategoryListResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramInsightsController_createCategory: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminSaveInstagramMediaCategoryDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminInstagramMediaCategoryResponseDto'];
+        };
+      };
+      /** @description 입력 오류 */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description INSTAGRAM_MEDIA_CATEGORY_EXISTS */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramInsightsController_removeCategory: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description INSTAGRAM_MEDIA_CATEGORY_BUILT_IN */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description INSTAGRAM_MEDIA_CATEGORY_NOT_FOUND */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminInstagramInsightsController_updateCategory: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminSaveInstagramMediaCategoryDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminInstagramMediaCategoryResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description INSTAGRAM_MEDIA_CATEGORY_NOT_FOUND */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description INSTAGRAM_MEDIA_CATEGORY_EXISTS */
+      409: {
         headers: {
           [name: string]: unknown;
         };

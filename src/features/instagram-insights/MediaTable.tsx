@@ -1,15 +1,22 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
+import { useMemo } from 'react';
 import { Badge } from '@/components/ui';
 import { DataTable } from '@/components/ui/DataTable';
 import { formatDate, formatNumber } from '@/shared/lib/format';
-import { MEDIA_CATEGORY_LABEL, MEDIA_PRODUCT_LABEL, label } from '@/shared/lib/labels';
-import { followRateTone, formatRate, type MediaListItem } from './insights-types';
+import { MEDIA_PRODUCT_LABEL, label } from '@/shared/lib/labels';
+import { CategorySelect } from './CategorySelect';
+import {
+  followRateTone,
+  formatRate,
+  type MediaCategory,
+  type MediaListItem,
+} from './insights-types';
 import { Thumbnail } from './Thumbnail';
 import styles from './insights.module.css';
 
-const columns: ColumnDef<MediaListItem, unknown>[] = [
+const columnsFor = (categories: MediaCategory[]): ColumnDef<MediaListItem, unknown>[] => [
   {
     header: '',
     id: 'thumb',
@@ -34,13 +41,8 @@ const columns: ColumnDef<MediaListItem, unknown>[] = [
   },
   {
     header: '카테고리',
-    cell: ({ row }) => (
-      <span className={styles.title}>
-        {label(MEDIA_CATEGORY_LABEL, row.original.category)}
-        {row.original.categorySource === 'MANUAL' && <Badge tone="brand">수동</Badge>}
-      </span>
-    ),
-    size: 160,
+    cell: ({ row }) => <CategorySelect media={row.original} categories={categories} />,
+    size: 200,
   },
   {
     header: '경과일',
@@ -106,7 +108,14 @@ const columns: ColumnDef<MediaListItem, unknown>[] = [
   },
 ];
 
-export function MediaTable({ items }: { items: MediaListItem[] }) {
+export function MediaTable({
+  items,
+  categories,
+}: {
+  items: MediaListItem[];
+  categories: MediaCategory[];
+}) {
+  const columns = useMemo(() => columnsFor(categories), [categories]);
   return (
     <DataTable
       columns={columns}
