@@ -4,7 +4,6 @@ import { Card, LinkButton, PageHeader, Row, Stack, Tabs } from '@/components/ui'
 import { ActionButton } from '@/components/ui/ActionButton';
 import { syncInsightsAction } from '@/features/instagram-insights/actions';
 import { CategoriesSection } from '@/features/instagram-insights/CategoriesSection';
-import { BASES, INSIGHTS_DAYS } from '@/features/instagram-insights/insights-types';
 import { MediaSection } from '@/features/instagram-insights/MediaSection';
 import { OverviewSection } from '@/features/instagram-insights/OverviewSection';
 import { adminApi } from '@/shared/api/admin-api';
@@ -16,7 +15,7 @@ import { param, withQuery } from '@/shared/lib/url';
 export const metadata: Metadata = { title: '인스타 성과' };
 
 const TABS = [
-  { key: 'overview', label: '개요' },
+  { key: 'overview', label: '요약' },
   { key: 'media', label: '게시물' },
   { key: 'categories', label: '카테고리 비교' },
 ];
@@ -40,8 +39,6 @@ export default async function InstagramInsightsPage({
 }) {
   const params = await searchParams;
   const tab = pick(param(params.tab), ['overview', 'media', 'categories'], 'overview');
-  const days = pick(param(params.days), INSIGHTS_DAYS, '30');
-  const basis = pick(param(params.basis), BASES, 'final');
   const [collectedAt, admin] = await Promise.all([lastCollectedAt(), getSessionAdmin()]);
 
   return (
@@ -68,28 +65,16 @@ export default async function InstagramInsightsPage({
           active={tab}
           items={TABS.map((item) => ({
             ...item,
-            href: withQuery('/instagram-insights', {}, { tab: item.key, days }),
-          }))}
-        />
-        <Tabs
-          active={days}
-          items={INSIGHTS_DAYS.map((value) => ({
-            key: value,
-            label: `최근 ${value}일 게시`,
-            href: withQuery(
-              '/instagram-insights',
-              {},
-              { tab, days: value, basis: tab === 'categories' ? basis : undefined },
-            ),
+            href: withQuery('/instagram-insights', {}, { tab: item.key }),
           }))}
         />
         <Suspense key={JSON.stringify(params)} fallback={<Card>불러오는 중…</Card>}>
           {tab === 'media' ? (
-            <MediaSection days={days} params={params} />
+            <MediaSection params={params} />
           ) : tab === 'categories' ? (
-            <CategoriesSection days={days} basis={basis} />
+            <CategoriesSection />
           ) : (
-            <OverviewSection days={days} />
+            <OverviewSection />
           )}
         </Suspense>
       </Stack>

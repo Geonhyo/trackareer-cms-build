@@ -38,32 +38,6 @@
   flex-wrap: wrap;
 }
 
-/* ===== 개요 상위 게시물 ===== */
-.topList {
-  display: grid;
-  gap: var(--x3);
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-}
-.topItem {
-  display: flex;
-  flex-direction: column;
-  gap: var(--x2);
-  padding: var(--x3);
-  border: 1px solid var(--stroke-muted);
-  border-radius: var(--r3);
-}
-.topItem:hover {
-  border-color: var(--stroke);
-  box-shadow: var(--shadow-1);
-}
-.topTitle {
-  font-weight: var(--medium);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
 /* ===== 상세 ===== */
 .header {
   display: flex;
@@ -110,4 +84,94 @@
 .categoryRow form {
   flex: 1;
   min-width: 240px;
+}
+
+/* ===== 성적 ===== */
+.good {
+  color: var(--fg-positive);
+}
+.weak {
+  color: var(--fg-critical);
+}
+.verdictBar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--x2);
+}
+.barTrackStacked {
+  display: flex;
+  gap: 2px;
+  height: 12px;
+  border-radius: var(--r1);
+  overflow: hidden;
+  background: var(--bg-neutral-weak);
+}
+.barGood {
+  background: var(--fg-positive);
+}
+.barOk {
+  background: var(--stroke);
+}
+.barWeak {
+  background: var(--fg-critical);
+}
+.barPending {
+  background: var(--bg-neutral-weak);
+}
+
+/* 집중할 것 */
+/* 집중할 것 한 줄 (Notice 안) */
+.focusItem {
+  display: flex;
+  gap: var(--x3);
+  align-items: flex-start;
+}
+.focusItem p {
+  margin: var(--x1) 0 0;
+  color: var(--fg-muted);
+  font-size: var(--t4);
+}
+.focusBody {
+  flex: 1;
+}
+
+/* 잘된 · 부진한 게시물 한 장 */
+.pickCard {
+  display: flex;
+  gap: var(--x3);
+  align-items: flex-start;
+}
+.pickBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--x1_5);
+  min-width: 0;
+}
+
+/* 접어 둔 숫자 */
+.more {
+  border-top: 1px solid var(--stroke-muted);
+  padding-top: var(--x3);
+}
+.more summary {
+  cursor: pointer;
+  color: var(--fg-muted);
+  font-size: var(--t4);
+}
+.moreBody {
+  margin-top: var(--x3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--x4);
+}
+
+/* 카테고리 카드 */
+.categoryCards {
+  display: grid;
+  gap: var(--x3);
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+.rank {
+  color: var(--fg-muted);
+  font-size: var(--t3);
 }

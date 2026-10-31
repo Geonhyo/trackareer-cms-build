@@ -16,6 +16,11 @@ const columns: ColumnDef<Stat, unknown>[] = [
     meta: { align: 'right' },
   },
   {
+    header: '7일 값 있음',
+    cell: ({ row }) => formatNumber(row.original.judgedCount),
+    meta: { align: 'right' },
+  },
+  {
     header: '도달 중앙값',
     cell: ({ row }) => formatNumber(row.original.reachMedian),
     meta: { align: 'right' },
@@ -31,8 +36,13 @@ const columns: ColumnDef<Stat, unknown>[] = [
     meta: { align: 'right' },
   },
   {
-    header: '팔로우 전환율',
+    header: '팔로우 전환',
     cell: ({ row }) => formatRate(row.original.followRateMedian),
+    meta: { align: 'right' },
+  },
+  {
+    header: '저장 · 공유',
+    cell: ({ row }) => formatRate(row.original.engagementRateMedian),
     meta: { align: 'right' },
   },
   {

@@ -10,9 +10,9 @@ import {
   PageHeader,
   Row,
   Stack,
+  Stat,
   Tabs,
 } from '@/components/ui';
-import { BarList } from '@/features/dashboard/BarList';
 import { listCategories } from '@/features/instagram-insights/categories';
 import {
   BASIS_LABEL,
@@ -24,13 +24,23 @@ import {
   IncreaseChart,
   type SnapshotMetric,
 } from '@/features/instagram-insights/InsightsCharts';
+import { DmFunnel } from '@/features/instagram-insights/DmFunnel';
 import { MediaEditForm } from '@/features/instagram-insights/MediaEditForm';
+import { MoreDetails } from '@/features/instagram-insights/MoreDetails';
+import {
+  basisPhrase,
+  rulesPhrase,
+  SignalChips,
+  VerdictBadge,
+  verdictReason,
+  type VerdictRules,
+} from '@/features/instagram-insights/verdict';
 import { Thumbnail } from '@/features/instagram-insights/Thumbnail';
 import styles from '@/features/instagram-insights/insights.module.css';
 import { adminApi } from '@/shared/api/admin-api';
 import { ApiError } from '@/shared/api/errors';
 import type { Schemas } from '@/shared/api/types';
-import { formatDateTime, formatNumber, formatPercent } from '@/shared/lib/format';
+import { formatDateTime, formatNumber } from '@/shared/lib/format';
 import { MEDIA_PRODUCT_LABEL, label } from '@/shared/lib/labels';
 import { param } from '@/shared/lib/url';
 
@@ -65,40 +75,13 @@ async function loadDetail(id: string): Promise<Detail> {
   }
 }
 
-/** 단계 비율 (앞 단계 대비) */
-const step = (value: number | null | undefined, prev: number | null | undefined) =>
-  value === null || value === undefined || !prev ? undefined : formatPercent(value / prev, 1);
-
-function DmFunnel({ media }: { media: MediaItem }) {
-  if (!media.dm) {
-    return (
-      <Stack>
-        <Notice>DM 자동화에 등록되지 않은 게시물이에요.</Notice>
-        <div>
-          <LinkButton href="/instagram-dm/new">인스타 DM에 등록하기</LinkButton>
-        </div>
-      </Stack>
-    );
+/** 판정 기준 설명 한 줄 */
+function verdictNote(media: MediaItem, rules: VerdictRules): string {
+  const { verdict } = media;
+  if (verdict.level === 'PENDING' || verdict.level === 'NO_BASELINE') {
+    return `같은 카테고리 게시물의 게시 ${rules.verdictDay}일 시점 값과 비교해요. ${rulesPhrase(rules)}.`;
   }
-  const reach = media.metrics?.reach ?? 0;
-  const comments = media.metrics?.comments ?? 0;
-  const { firstDmCount, linkSentCount } = media.dm;
-  return (
-    <BarList
-      max={Math.max(1, reach)}
-      items={[
-        { key: 'reach', name: '도달', value: reach },
-        { key: 'comments', name: '댓글', value: comments, sub: step(comments, reach) },
-        { key: 'firstDm', name: '첫 DM', value: firstDmCount, sub: step(firstDmCount, comments) },
-        {
-          key: 'link',
-          name: '링크 발송',
-          value: linkSentCount,
-          sub: step(linkSentCount, firstDmCount),
-        },
-      ]}
-    />
-  );
+  return `${basisPhrase(verdict, rules)} · 같은 카테고리 ${verdict.sampleSize}개와 비교 · ${rulesPhrase(rules)}.`;
 }
 
 export default async function InstagramMediaPage({
@@ -109,7 +92,7 @@ export default async function InstagramMediaPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
-  const [{ media, snapshots, comparison }, categories] = await Promise.all([
+  const [{ media, snapshots, comparison, rules }, categories] = await Promise.all([
     loadDetail(id),
     listCategories(),
   ]);
@@ -148,50 +131,93 @@ export default async function InstagramMediaPage({
         {media.lastError && (
           <Notice tone="warning">마지막 수집이 실패했어요: {media.lastError}</Notice>
         )}
-        <Grid min={200}>
-          {(Object.keys(METRICS) as SnapshotMetric[]).map((key) => (
-            <Card key={key}>
-              <DefinitionList
-                items={[{ label: METRICS[key], value: formatNumber(media.metrics?.[key]) }]}
-              />
-            </Card>
-          ))}
-        </Grid>
-        <Card
-          title="게시 후 추이"
-          description="누적값과 앞 수집 대비 증가 (경과일 = 게시 후 24시간 단위)"
-        >
-          <Stack>
-            <Tabs
-              active={metric}
-              items={(Object.keys(METRICS) as SnapshotMetric[]).map((key) => ({
-                key,
-                label: METRICS[key],
-                href: `/instagram-insights/${media.id}?metric=${key}`,
-              }))}
+        <Grid min={320}>
+          <Card title="성적">
+            <Stack>
+              <span className={styles.title}>
+                <VerdictBadge verdict={media.verdict} />
+                <b>{verdictReason(media, rules)}</b>
+              </span>
+              <SignalChips verdict={media.verdict} />
+              <span className={styles.muted}>{verdictNote(media, rules)}</span>
+            </Stack>
+          </Card>
+          <Card title="팔로우">
+            <Stat
+              label="팔로우 합계"
+              value={`${formatNumber(media.follows.total)}명`}
+              sub={
+                <>
+                  게시물에서 {formatNumber(media.follows.post)}명 · 자동 DM으로{' '}
+                  {formatNumber(media.follows.dm)}명
+                  <br />
+                  {media.follows.post === null
+                    ? '인스타가 이 게시물(릴스)의 팔로우 수를 주지 않아 DM 팔로우만 있어요'
+                    : `도달 대비 ${formatRate(media.rates.followRate)}`}
+                </>
+              }
             />
-            {snapshots.length === 0 ? (
-              <p className={styles.muted}>아직 수집 전이에요.</p>
-            ) : (
-              <Grid min={320}>
-                <CumulativeChart
-                  snapshots={snapshots}
-                  metric={metric}
-                  name={`누적 ${METRICS[metric]}`}
-                />
-                <IncreaseChart
-                  snapshots={snapshots}
-                  metric={metric}
-                  name={`${METRICS[metric]} 증가`}
-                />
-              </Grid>
-            )}
-          </Stack>
+          </Card>
+        </Grid>
+        <Card title="자동 DM" description="첫 DM → 버튼 누름 → 팔로우 요청 → 팔로우 → 링크">
+          {media.dm ? (
+            <DmFunnel funnel={media.dm.funnel} since={rules.funnelSince} />
+          ) : (
+            <Stack>
+              <Notice>
+                자동 DM에 등록되지 않은 게시물이에요. 등록하면 댓글 단 사람을 팔로우로 이어 갈 수
+                있어요.
+              </Notice>
+              <div>
+                <LinkButton href="/instagram-dm/new">인스타 DM에 등록하기</LinkButton>
+              </div>
+            </Stack>
+          )}
         </Card>
-        <Grid min={420}>
+        <MoreDetails open={metricKey !== undefined}>
+          <Grid min={200}>
+            {(Object.keys(METRICS) as SnapshotMetric[]).map((key) => (
+              <Card key={key}>
+                <DefinitionList
+                  items={[{ label: METRICS[key], value: formatNumber(media.metrics?.[key]) }]}
+                />
+              </Card>
+            ))}
+          </Grid>
+          <Card
+            title="게시 후 추이"
+            description="누적값과 앞 수집 대비 증가 (경과일 = 게시 후 24시간 단위, 인스타 집계)"
+          >
+            <Stack>
+              <Tabs
+                active={metric}
+                items={(Object.keys(METRICS) as SnapshotMetric[]).map((key) => ({
+                  key,
+                  label: METRICS[key],
+                  href: `/instagram-insights/${media.id}?metric=${key}`,
+                }))}
+              />
+              {snapshots.length === 0 ? (
+                <p className={styles.muted}>아직 수집 전이에요.</p>
+              ) : (
+                <Grid min={320}>
+                  <CumulativeChart
+                    snapshots={snapshots}
+                    metric={metric}
+                    name={`누적 ${METRICS[metric]}`}
+                  />
+                  <IncreaseChart
+                    snapshots={snapshots}
+                    metric={metric}
+                    name={`${METRICS[metric]} 증가`}
+                  />
+                </Grid>
+              )}
+            </Stack>
+          </Card>
           <Card
             title="같은 카테고리와 비교"
-            description="이 게시물 값 / 같은 카테고리 중앙값 (그날 수집이 없으면 '—')"
+            description="이 게시물 값 / 같은 카테고리 중간값 (팔로우 전환은 인스타 + DM, 그 기준 값이 없으면 '—')"
           >
             <div className={styles.tableWrap}>
               <table className={styles.compare}>
@@ -213,7 +239,7 @@ export default async function InstagramMediaPage({
                       {RATE_COLUMNS.map(([key]) => (
                         <td key={key}>
                           {formatRate(row.media?.[key])}
-                          <small>중앙값 {formatRate(row.median[key])}</small>
+                          <small>중간값 {formatRate(row.median?.[key])}</small>
                         </td>
                       ))}
                     </tr>
@@ -222,10 +248,7 @@ export default async function InstagramMediaPage({
               </table>
             </div>
           </Card>
-          <Card title="DM 퍼널" description="도달 → 댓글 → 첫 DM → 링크 발송 (앞 단계 대비)">
-            <DmFunnel media={media} />
-          </Card>
-        </Grid>
+        </MoreDetails>
         <Card title="관리">
           <MediaEditForm
             key={`${media.categoryId}-${media.productType}-${media.memo}`}

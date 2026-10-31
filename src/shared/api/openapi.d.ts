@@ -1806,7 +1806,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** 인스타 성과 개요 (팔로워 추이 · 기간 게시물 수 · 합계 · 상위 게시물 5개) */
+    /** 인스타 성과 요약 (팔로워 이번 주 · 최근 30일 성적 분포 · 가장 잘된 · 부진한 게시물 · 집중할 것 · DM 단계) */
     get: operations['AdminInstagramInsightsController_overview'];
     put?: never;
     post?: never;
@@ -1823,7 +1823,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** 인스타 게시물 성과 (30개씩, 최신 누적값 · 비율 · DM 집계) */
+    /** 인스타 게시물 (30개씩, 성적 · 최신 누적값 · DM 단계) */
     get: operations['AdminInstagramInsightsController_list'];
     put?: never;
     post?: never;
@@ -1840,7 +1840,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** 인스타 게시물 하나 (스냅샷 추이 · 기준일별 카테고리 중앙값 비교 · DM 퍼널) */
+    /** 인스타 게시물 하나 (성적 · 스냅샷 추이 · 기준일별 카테고리 중간값 비교 · DM 단계) */
     get: operations['AdminInstagramInsightsController_detail'];
     put?: never;
     post?: never;
@@ -1858,7 +1858,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** 카테고리별 성과 비교 (기준일 d1 · d3 · d7 · final) */
+    /** 카테고리 비교 (7일 기준 중간값 · 성적 분포 · 강점 · 약점, 기간 없이 전체 게시물) */
     get: operations['AdminInstagramInsightsController_categories'];
     put?: never;
     post?: never;
@@ -4275,16 +4275,19 @@ export interface components {
     AdminInstagramFollowersDto: {
       /** @description 가장 최근 수집 값 */
       current: number | null;
-      /** @description 기간 마지막 날 − 첫날 (기록이 없으면 null) */
-      change: number | null;
+      /** @description 최근 7일 증감 (7일 전 기록이 없으면 null) */
+      thisWeek: number | null;
+      /** @description 그 전 7일 증감 (기록이 없으면 null) */
+      lastWeek: number | null;
+      /** @description 최근 30일 */
       daily: components['schemas']['AdminInstagramFollowerDayDto'][];
     };
-    AdminInstagramTotalsDto: {
-      reach: number;
-      saved: number;
-      shares: number;
-      /** @description 게시물에 귀속된 팔로우 */
-      follows: number;
+    AdminInstagramVerdictCountsDto: {
+      GOOD: number;
+      OK: number;
+      WEAK: number;
+      PENDING: number;
+      NO_BASELINE: number;
     };
     AdminInstagramMetricsDto: {
       reach: number | null;
@@ -4302,19 +4305,76 @@ export interface components {
       /** @description 릴스만 (ms) */
       totalWatchMs: number | null;
     };
+    AdminInstagramFollowsDto: {
+      /** @description 인스타가 센 게시물 팔로우 (릴스는 주지 않아 null) */
+      post: number | null;
+      /** @description 자동 DM 팔로우 요청 뒤 '팔로우했어요'로 확인된 사람 */
+      dm: number;
+      total: number;
+    };
     AdminInstagramRatesDto: {
       /** @description 저장 ÷ 도달 */
       saveRate: number | null;
       /** @description 공유 ÷ 도달 */
       shareRate: number | null;
-      /** @description 팔로우 ÷ 도달 */
+      /** @description 팔로우 합계(인스타 + DM) ÷ 도달 */
       followRate: number | null;
+    };
+    AdminInstagramSignalDto: {
+      /** @enum {string} */
+      key: 'reach' | 'followRate' | 'saveRate' | 'shareRate';
+      /** @description 비교 대상 중간값 대비 배수 */
+      ratio: number;
+    };
+    AdminInstagramVerdictDto: {
+      /**
+       * @description GOOD 평소의 1.3배 이상 · OK · WEAK 0.7배 이하 · PENDING 집계 중 · NO_BASELINE 비교할 게시물 부족
+       * @enum {string}
+       */
+      level: 'GOOD' | 'OK' | 'WEAK' | 'PENDING' | 'NO_BASELINE';
+      /** @enum {string|null} */
+      basis: 'd1' | 'd3' | 'd7' | 'final' | null;
+      /** @description 7일 전이라 3일 값으로 본 잠정 판정 */
+      provisional: boolean;
+      /**
+       * @description FOLLOW 팔로우 전환 · ENGAGEMENT 저장 · 공유 (카테고리에 팔로우가 거의 없을 때)
+       * @enum {string|null}
+       */
+      metric: 'FOLLOW' | 'ENGAGEMENT' | null;
+      value: number | null;
+      /** @description 같은 카테고리 중간값 */
+      median: number | null;
+      /** @description value ÷ median */
+      ratio: number | null;
+      /** @description 중간값을 낸 게시물 수 */
+      sampleSize: number;
+      /** @description 중간값보다 눈에 띄게 높거나 낮은 지표 (차이 큰 순) */
+      signals: components['schemas']['AdminInstagramSignalDto'][];
+    };
+    AdminInstagramDmFunnelDto: {
+      /** @description 첫 DM 발송 (단계 기록 뒤) */
+      firstDm: number;
+      /** @description '링크 받기'(또는 직접 입력)를 누른 사람 */
+      tapped: number;
+      /** @description 원래 팔로워라 바로 링크를 받은 사람 */
+      alreadyFollower: number;
+      /** @description 팔로우 요청을 받은 사람 */
+      askedFollow: number;
+      /** @description 팔로우 요청 뒤 '팔로우했어요'를 누른 사람 */
+      followTapped: number;
+      /** @description 팔로우 요청 뒤 팔로워로 확인 = DM 팔로우 */
+      followed: number;
+      /** @description 링크를 받은 사람 */
+      linkSent: number;
     };
     AdminInstagramDmCountsDto: {
       /** @description cms 인스타 DM 게시물 id */
       postId: number;
+      /** @description 첫 DM 전체 (단계 기록 전 포함) */
       firstDmCount: number;
+      /** @description 링크 발송 전체 (단계 기록 전 포함) */
       linkSentCount: number;
+      funnel: components['schemas']['AdminInstagramDmFunnelDto'];
     };
     AdminInstagramMediaItemDto: {
       id: string;
@@ -4328,7 +4388,7 @@ export interface components {
       postedAt: string;
       /** @description IMAGE · VIDEO · CAROUSEL_ALBUM */
       mediaType: string;
-      /** @description FEED · REELS (cms에서 고쳤으면 그 값) */
+      /** @description FEED · REELS (cms에서 고칠 수 있음) */
       productType: string;
       /** @description 인스타 값과 다른 유형으로 고쳤으면 true */
       productTypeManual: boolean;
@@ -4347,67 +4407,92 @@ export interface components {
       lastError: string | null;
       /** @description 최신 스냅샷 누적값. 아직 수집 전이면 null */
       metrics: components['schemas']['AdminInstagramMetricsDto'] | null;
+      /** @description 최신 누적 */
+      follows: components['schemas']['AdminInstagramFollowsDto'];
+      /** @description 최신 누적 기준 */
       rates: components['schemas']['AdminInstagramRatesDto'];
+      verdict: components['schemas']['AdminInstagramVerdictDto'];
       /** @description cms 인스타 DM에 등록 안 된 게시물은 null */
       dm: components['schemas']['AdminInstagramDmCountsDto'] | null;
     };
+    AdminInstagramFocusDto: {
+      /**
+       * @description BEST_CATEGORY 팔로우를 가장 잘 데려오는 카테고리 · SAVES_WITHOUT_FOLLOWS 저장만 많은 카테고리 · FUNNEL_TAP_DROP 첫 DM에서 안 누름 · FUNNEL_FOLLOW_DROP 팔로우 요청에서 빠짐 · POSTS_WITHOUT_DM 자동 DM 없는 게시물
+       * @enum {string}
+       */
+      kind:
+        | 'BEST_CATEGORY'
+        | 'SAVES_WITHOUT_FOLLOWS'
+        | 'FUNNEL_TAP_DROP'
+        | 'FUNNEL_FOLLOW_DROP'
+        | 'POSTS_WITHOUT_DM';
+      /** @enum {string} */
+      tone: 'positive' | 'warning';
+      category: string | null;
+      /** @description 비교 대상 카테고리 */
+      compareCategory: string | null;
+      /** @description 사람 · 게시물 수 */
+      count: number | null;
+      /** @description 비율 0~1 */
+      rate: number | null;
+      /** @description 배수 */
+      ratio: number | null;
+      /** @description 두 번째 배수 */
+      compareRatio: number | null;
+    };
+    AdminInstagramTotalsDto: {
+      reach: number;
+      saved: number;
+      shares: number;
+      /** @description 팔로우 합계 (인스타 + DM) */
+      follows: number;
+    };
+    AdminInstagramVerdictRulesDto: {
+      /** @description 이 배수 이상이면 잘됨 */
+      goodRatio: number;
+      /** @description 이 배수 이하면 부진 */
+      weakRatio: number;
+      /** @description 카테고리 중간값을 내는 최소 게시물 수 */
+      minPosts: number;
+      /** @description 판정 시점 (게시 후 일) */
+      verdictDay: number;
+      /** @description 잠정 판정 시점 (게시 후 일) */
+      provisionalDay: number;
+      /**
+       * Format: date-time
+       * @description 자동 DM 단계 기록을 시작한 때 (등록된 게시물이 없으면 null)
+       */
+      funnelSince: string | null;
+    };
     AdminInstagramOverviewDto: {
-      /** @description KST YYYY-MM-DD */
-      from: string;
       followers: components['schemas']['AdminInstagramFollowersDto'];
-      /** @description 기간에 올린 게시물 수 */
+      /** @description 최근 게시물 기간 시작 KST YYYY-MM-DD (30일) */
+      from: string;
+      /** @description 최근 30일 게시물 수 */
       mediaCount: number;
-      /** @description 기간 게시물의 최신 누적값 합계 */
+      verdicts: components['schemas']['AdminInstagramVerdictCountsDto'];
+      /** @description 최근 30일 중 평소 대비 가장 잘된 게시물 */
+      best: components['schemas']['AdminInstagramMediaItemDto'] | null;
+      /** @description 최근 30일 중 평소 대비 가장 부진한 게시물 */
+      worst: components['schemas']['AdminInstagramMediaItemDto'] | null;
+      /** @description 집중할 것 (많아야 3개) */
+      focus: components['schemas']['AdminInstagramFocusDto'][];
+      /** @description 최근 30일 게시물 합 */
+      dmFunnel: components['schemas']['AdminInstagramDmFunnelDto'];
+      /** @description 최근 30일 게시물 최신 누적 합 */
       totals: components['schemas']['AdminInstagramTotalsDto'];
-      /** @description 팔로우 합 ÷ 도달 합 (팔로우 값이 있는 게시물만) */
+      /** @description 팔로우 합계 ÷ 도달 합 (최근 30일) */
       followRate: number | null;
-      /** @description 팔로우 많은 순 5개 */
-      topMedia: components['schemas']['AdminInstagramMediaItemDto'][];
       /** Format: date-time */
       lastCollectedAt: string | null;
+      rules: components['schemas']['AdminInstagramVerdictRulesDto'];
     };
     AdminInstagramOverviewResponseDto: {
       item: components['schemas']['AdminInstagramOverviewDto'];
     };
-    AdminInstagramMediaListItemDto: {
-      id: string;
-      shortcode: string;
-      permalink: string;
-      /** @description 인스타 CDN 주소 (만료될 수 있다) */
-      thumbnailUrl: string | null;
-      /** @description 캡션 첫 줄 (없으면 빈 문자열) */
-      title: string;
-      /** Format: date-time */
-      postedAt: string;
-      /** @description IMAGE · VIDEO · CAROUSEL_ALBUM */
-      mediaType: string;
-      /** @description FEED · REELS (cms에서 고쳤으면 그 값) */
-      productType: string;
-      /** @description 인스타 값과 다른 유형으로 고쳤으면 true */
-      productTypeManual: boolean;
-      categoryId: number;
-      categoryName: string;
-      /** @enum {string} */
-      categorySource: 'AUTO' | 'MANUAL';
-      memo: string | null;
-      /** @description 게시 30일 안이라 매일 수집 중 */
-      tracking: boolean;
-      /** @description 최신 스냅샷의 게시 후 경과일 (24시간 단위) */
-      dayIndex: number | null;
-      /** Format: date-time */
-      lastSnapshotAt: string | null;
-      /** @description 마지막 수집 실패 이유 */
-      lastError: string | null;
-      /** @description 최신 스냅샷 누적값. 아직 수집 전이면 null */
-      metrics: components['schemas']['AdminInstagramMetricsDto'] | null;
-      rates: components['schemas']['AdminInstagramRatesDto'];
-      /** @description cms 인스타 DM에 등록 안 된 게시물은 null */
-      dm: components['schemas']['AdminInstagramDmCountsDto'] | null;
-      /** @description 같은 카테고리 · 같은 기간의 팔로우 전환율 중앙값 (최종 기준) */
-      categoryFollowRateMedian: number | null;
-    };
     AdminInstagramMediaListResponseDto: {
-      items: components['schemas']['AdminInstagramMediaListItemDto'][];
+      items: components['schemas']['AdminInstagramMediaItemDto'][];
+      rules: components['schemas']['AdminInstagramVerdictRulesDto'];
       total: number;
       page: number;
       limit: number;
@@ -4427,9 +4512,9 @@ export interface components {
       basis: 'd1' | 'd3' | 'd7' | 'final';
       /** @description 이 게시물 값 (그 기준 스냅샷이 없으면 null) */
       media: components['schemas']['AdminInstagramRatesDto'] | null;
-      /** @description 같은 카테고리 중앙값 (기간 없이 전체) */
-      median: components['schemas']['AdminInstagramRatesDto'];
-      /** @description 중앙값을 낸 게시물 수 */
+      /** @description 같은 카테고리 중간값 (그 기준 값이 있는 게시물이 없으면 null) */
+      median: components['schemas']['AdminInstagramRatesDto'] | null;
+      /** @description 중간값을 낸 게시물 수 */
       sampleSize: number;
     };
     AdminInstagramMediaDetailDto: {
@@ -4438,6 +4523,7 @@ export interface components {
       snapshots: components['schemas']['AdminInstagramSnapshotDto'][];
       /** @description d1 · d3 · d7 · final 순 */
       comparison: components['schemas']['AdminInstagramBasisCompareDto'][];
+      rules: components['schemas']['AdminInstagramVerdictRulesDto'];
     };
     AdminInstagramMediaDetailResponseDto: {
       item: components['schemas']['AdminInstagramMediaDetailDto'];
@@ -4459,23 +4545,35 @@ export interface components {
     AdminInstagramCategoryStatDto: {
       categoryId: number;
       name: string;
-      /** @description 그 기준 스냅샷이 있는 게시물 수 */
+      /** @description 게시물 수 (전체) */
       mediaCount: number;
+      /** @description 7일 값이 있는 게시물 수 (중간값의 표본) */
+      judgedCount: number;
+      /** @description 순위 (표본이 rules.minPosts 미만이면 null — 아직 비교하지 않음) */
+      rank: number | null;
+      /**
+       * @description 이 카테고리 성적을 매기는 기준 (게시물이 없으면 null)
+       * @enum {string|null}
+       */
+      metric: 'FOLLOW' | 'ENGAGEMENT' | null;
+      verdicts: components['schemas']['AdminInstagramVerdictCountsDto'];
       reachMedian: number | null;
+      followRateMedian: number | null;
       saveRateMedian: number | null;
       shareRateMedian: number | null;
-      followRateMedian: number | null;
-      /** @description 팔로우 평균 */
+      /** @description 저장 + 공유 ÷ 도달 중간값 */
+      engagementRateMedian: number | null;
+      /** @description 팔로우 합계 평균 */
       followsAvg: number | null;
-      /** @description 전체 카테고리 팔로우 합 중 이 카테고리 비중 (0~1) */
+      /** @description 전체 팔로우 합계 중 이 카테고리 비중 (0~1) */
       followsShare: number;
+      /** @description 전체 게시물 중간값 대비 강점 · 약점 */
+      signals: components['schemas']['AdminInstagramSignalDto'][];
     };
     AdminInstagramCategoriesDto: {
-      /** @description KST YYYY-MM-DD */
-      from: string;
-      /** @enum {string} */
-      basis: 'd1' | 'd3' | 'd7' | 'final';
+      /** @description 팔로우 전환 중간값 높은 순 (표본이 3개 미만이면 뒤로) */
       items: components['schemas']['AdminInstagramCategoryStatDto'][];
+      rules: components['schemas']['AdminInstagramVerdictRulesDto'];
     };
     AdminInstagramCategoriesResponseDto: {
       item: components['schemas']['AdminInstagramCategoriesDto'];
@@ -9504,10 +9602,7 @@ export interface operations {
   };
   AdminInstagramInsightsController_overview: {
     parameters: {
-      query?: {
-        /** @description 최근 며칠에 올린 게시물 (게시일 KST 기준) */
-        days?: 7 | 30 | 90 | 365;
-      };
+      query?: never;
       header?: never;
       path?: never;
       cookie?: never;
@@ -9541,16 +9636,16 @@ export interface operations {
   AdminInstagramInsightsController_list: {
     parameters: {
       query?: {
-        /** @description 최근 며칠에 올린 게시물 (게시일 KST 기준) */
-        days?: 7 | 30 | 90 | 365;
         /** @description 카테고리 id */
         categoryId?: number;
         /** @description FEED = 피드 · 캐러셀, REELS = 릴스 */
         type?: 'FEED' | 'REELS';
+        /** @description 성적 */
+        verdict?: 'GOOD' | 'OK' | 'WEAK' | 'PENDING' | 'NO_BASELINE';
         /** @description true면 추적 중(게시 30일 안)만 */
         tracking?: boolean;
-        /** @description posted = 최근 게시순, 나머지는 큰 값부터 (값 없는 게시물은 뒤로) */
-        sort?: 'posted' | 'reach' | 'follows' | 'follow_rate' | 'save_rate' | 'share_rate';
+        /** @description posted = 최근 게시순, verdict = 성적(평소 대비) 높은 순, follows = 팔로우 합계, reach = 도달 */
+        sort?: 'posted' | 'verdict' | 'follows' | 'reach';
         page?: components['schemas']['Object'];
       };
       header?: never;
@@ -9680,12 +9775,7 @@ export interface operations {
   };
   AdminInstagramInsightsController_categories: {
     parameters: {
-      query?: {
-        /** @description 최근 며칠에 올린 게시물 (게시일 KST 기준) */
-        days?: 7 | 30 | 90 | 365;
-        /** @description 비교 기준. dN = 게시 후 N일(24시간 단위) 스냅샷, final = 마지막 스냅샷 */
-        basis?: 'd1' | 'd3' | 'd7' | 'final';
-      };
+      query?: never;
       header?: never;
       path?: never;
       cookie?: never;
