@@ -4,7 +4,10 @@ export type NavGroup = { label: string; items: NavItem[] };
 export const NAV: NavGroup[] = [
   {
     label: '지표',
-    items: [{ href: '/', label: '대시보드' }],
+    items: [
+      { href: '/', label: '대시보드' },
+      { href: '/instagram-insights', label: '인스타 성과' },
+    ],
   },
   {
     label: '운영',

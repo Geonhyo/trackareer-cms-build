@@ -112,3 +112,9 @@ export const POSTING_ORIGIN_LABEL: Record<string, string> = {
   OTHER: '기타 사이트 링크',
   UNKNOWN: '구버전 (출처 없음)',
 };
+
+// 인스타 성과 게시물 유형 (카테고리 이름은 서버 목록을 쓴다)
+export const MEDIA_PRODUCT_LABEL: Record<string, string> = {
+  FEED: '캐러셀 · 피드',
+  REELS: '릴스',
+};

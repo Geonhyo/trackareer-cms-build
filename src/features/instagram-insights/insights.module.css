@@ -1,0 +1,177 @@
+.thumb {
+  display: inline-block;
+  flex: none;
+  border-radius: var(--r2);
+  background: var(--bg-neutral-weak);
+  object-fit: cover;
+  vertical-align: middle;
+}
+.title {
+  display: inline-flex;
+  gap: var(--x1_5);
+  align-items: center;
+  flex-wrap: wrap;
+}
+.live {
+  color: var(--fg-positive);
+  font-size: 10px;
+}
+.muted {
+  color: var(--fg-muted);
+  font-size: var(--t3);
+}
+
+/* ===== 필터 ===== */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--x3);
+  align-items: flex-end;
+}
+.filters > * {
+  min-width: 160px;
+}
+.filterActions {
+  display: flex;
+  gap: var(--x2);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ===== 상세 ===== */
+.header {
+  display: flex;
+  gap: var(--x4);
+  align-items: center;
+}
+.compare {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t4);
+}
+.compare th,
+.compare td {
+  padding: var(--x2) var(--x3);
+  border-bottom: 1px solid var(--stroke-muted);
+  text-align: right;
+  white-space: nowrap;
+}
+.compare th:first-child,
+.compare td:first-child {
+  text-align: left;
+}
+.compare th {
+  color: var(--fg-muted);
+  font-weight: var(--medium);
+}
+.compare small {
+  display: block;
+  color: var(--fg-subtle);
+  font-size: var(--t2);
+}
+.tableWrap {
+  overflow-x: auto;
+}
+
+/* 카테고리 관리: 한 줄 = 이름 수정 · 게시물 수 · 삭제 */
+.categoryRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--x2);
+  align-items: center;
+}
+
+.categoryRow form {
+  flex: 1;
+  min-width: 240px;
+}
+
+/* ===== 성적 ===== */
+.good {
+  color: var(--fg-positive);
+}
+.weak {
+  color: var(--fg-critical);
+}
+.verdictBar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--x2);
+}
+.barTrackStacked {
+  display: flex;
+  gap: 2px;
+  height: 12px;
+  border-radius: var(--r1);
+  overflow: hidden;
+  background: var(--bg-neutral-weak);
+}
+.barGood {
+  background: var(--fg-positive);
+}
+.barOk {
+  background: var(--stroke);
+}
+.barWeak {
+  background: var(--fg-critical);
+}
+.barPending {
+  background: var(--bg-neutral-weak);
+}
+
+/* 집중할 것 */
+/* 집중할 것 한 줄 (Notice 안) */
+.focusItem {
+  display: flex;
+  gap: var(--x3);
+  align-items: flex-start;
+}
+.focusItem p {
+  margin: var(--x1) 0 0;
+  color: var(--fg-muted);
+  font-size: var(--t4);
+}
+.focusBody {
+  flex: 1;
+}
+
+/* 잘된 · 부진한 게시물 한 장 */
+.pickCard {
+  display: flex;
+  gap: var(--x3);
+  align-items: flex-start;
+}
+.pickBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--x1_5);
+  min-width: 0;
+}
+
+/* 접어 둔 숫자 */
+.more {
+  border-top: 1px solid var(--stroke-muted);
+  padding-top: var(--x3);
+}
+.more summary {
+  cursor: pointer;
+  color: var(--fg-muted);
+  font-size: var(--t4);
+}
+.moreBody {
+  margin-top: var(--x3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--x4);
+}
+
+/* 카테고리 카드 */
+.categoryCards {
+  display: grid;
+  gap: var(--x3);
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+.rank {
+  color: var(--fg-muted);
+  font-size: var(--t3);
+}
