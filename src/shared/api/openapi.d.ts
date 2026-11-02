@@ -1604,6 +1604,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/admin/extraction/failures': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 기간 안 성공이 아닌 요청 (부분 · 실패 · 차단 · 장애 · 공고 아님, 최근부터 5,000줄) — cms 실패 로그 내보내기 */
+    get: operations['AdminExtractionController_failures'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/admin/extraction/blocked-domains': {
     parameters: {
       query?: never;
@@ -4028,6 +4045,40 @@ export interface components {
     };
     AdminExtractionDomainListResponseDto: {
       items: components['schemas']['AdminExtractionDomainDto'][];
+    };
+    AdminExtractionFailureDto: {
+      /** Format: date-time */
+      requestedAt: string;
+      /** @description PARTIAL · FAILED · BLOCKED · UNAVAILABLE · NOT_POSTING */
+      status: string;
+      /** @description DB 캐시로 돌려준 요청 */
+      cached: boolean;
+      /** @description 서버가 이 요청에 쓴 시간 */
+      elapsedMs: number;
+      siteName: string | null;
+      domain: string;
+      /** @description site_id · site_fallback · generic */
+      keyRule: string;
+      /** @description 추출 결과가 없는 요청(차단 · 장애 · 공고 아님)은 null */
+      url: string | null;
+      /** @description 실패 원인 (스크래퍼 meta.failure) */
+      failure: string | null;
+      /** @description direct · browserless */
+      fetchMethod: string | null;
+      /** @description rule · llm · rule+llm */
+      extractMethod: string | null;
+      llmTokens: number;
+      company: string | null;
+      position: string | null;
+      deadlineDate: string | null;
+      /** @description true 마감일 있음 · false 상시 등 · null 모름 */
+      hasDeadline: boolean | null;
+    };
+    AdminExtractionFailureListResponseDto: {
+      /** @description 최근 요청부터 */
+      items: components['schemas']['AdminExtractionFailureDto'][];
+      /** @description 상한(5,000줄)을 넘어 잘렸는지 */
+      truncated: boolean;
     };
     AdminBlockedDomainDto: {
       domain: string;
@@ -8790,6 +8841,42 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['AdminExtractionDomainListResponseDto'];
+        };
+      };
+      /** @description 유효하지 않은 admin 액세스 토큰 */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description 권한 부족 / 비활성 계정 / 비밀번호 변경 필요 */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AdminExtractionController_failures: {
+    parameters: {
+      query?: {
+        /** @description 최근 며칠 (오늘 · 7일 · 30일) */
+        days?: 1 | 7 | 30;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdminExtractionFailureListResponseDto'];
         };
       };
       /** @description 유효하지 않은 admin 액세스 토큰 */

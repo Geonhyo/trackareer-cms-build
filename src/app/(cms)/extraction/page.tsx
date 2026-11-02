@@ -1,6 +1,17 @@
 import type { Metadata } from 'next';
 import { ActionButton } from '@/components/ui/ActionButton';
-import { Badge, Button, Card, Grid, Input, PageHeader, Stack, Stat, Tabs } from '@/components/ui';
+import {
+  Badge,
+  Button,
+  Card,
+  Grid,
+  Input,
+  LinkButton,
+  PageHeader,
+  Stack,
+  Stat,
+  Tabs,
+} from '@/components/ui';
 import { AlertList } from '@/features/status/AlertList';
 import { loadAlerts } from '@/features/status/load-alerts';
 import {
@@ -73,6 +84,12 @@ export default async function ExtractionPage({
       <PageHeader
         title="공고 추출"
         description="링크로 공고를 등록할 때의 추출 결과. 성공률 분모는 성공 · 부분 · 실패 요청 (차단 · 장애 제외)"
+        action={
+          // 고른 기간의 성공 아닌 요청을 CSV로 (route handler라 download로 브라우저가 받게 한다)
+          <LinkButton href={`/extraction/failures?days=${days}`} download prefetch={false}>
+            {PERIOD_LABEL[days]} 실패 로그 내보내기
+          </LinkButton>
+        }
       />
       <Tabs
         active={days}
